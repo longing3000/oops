@@ -15,7 +15,7 @@ void prepare_data(string filename);
 
 int  main(int argc, char* argv[])
 {
-    string filename = "./dat/input/RoyCoord.xyz";
+    string filename = "./dat/input/EspinBath_npin2.xyz";
     prepare_data(filename);
 
     return 0;
