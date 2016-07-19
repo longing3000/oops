@@ -3,13 +3,13 @@
 
 _INITIALIZE_EASYLOGGINGPP
 
-namespace po = boost::program_options;
+namespace po = boost::program_options;//get parameters from boost::program_options, one of standard basis used to read paramenters from users
 
-po::variables_map ParseCommandLineOptions(int argc, char* argv[]);
-void set_parameters(const string& xml_file_name);
-NVCenter create_defect_center(const po::variables_map& para);
-cSpinSourceUniformRandom create_spin_source(const po::variables_map& para);
-cDepthFirstPathTracing create_spin_cluster_algrithm(const po::variables_map& para, const cSpinCollection& bath_spins);
+po::variables_map ParseCommandLineOptions(int argc, char* argv[]);//????
+void set_parameters(const string& xml_file_name);//not used
+NVCenter create_defect_center(const po::variables_map& para);//used to generate defect center from reading parameter by boost
+cSpinSourceUniformRandom create_spin_source(const po::variables_map& para);//used to generate bath spins from reading parameter by boost
+cDepthFirstPathTracing create_spin_cluster_algrithm(const po::variables_map& para, const cSpinCollection& bath_spins);//spin cluster
 
 int  main(int argc, char* argv[])
 {
@@ -17,7 +17,7 @@ int  main(int argc, char* argv[])
 
     ////////////////////////////////////////////////////////////////////////////////
     //{{{  MPI Preparation
-    int worker_num(0), my_rank(0);
+    int worker_num(1), my_rank(1);
     int mpi_status = MPI_Init(&argc, &argv);
     assert (mpi_status == MPI_SUCCESS);
 
@@ -37,17 +37,16 @@ int  main(int argc, char* argv[])
 
     LOG(INFO) << "my_rank = " << my_rank << "  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv Program begins vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"; 
 
-    EnsembleCCE sol(my_rank, worker_num, para);
+    EnsembleCCE sol(my_rank, worker_num, para);//put MPI and parameter into the mainly function, which is a intitialize function. program just begin
 
     // Step 1: make a defect center
     NVCenter nv = create_defect_center(para);  
     sol.set_defect_center(&nv);
 
-    // Step 2: make bath spins 
+    // Step 2: make bath spins random
     cSpinSourceUniformRandom spinUR = create_spin_source(para);
     sol.set_bath_spin(&spinUR);
     spinUR.export_coordinates( OUTPUT_PATH + para["coord_file"].as<string>() );
-
     
     
     // Step 3: make clusters
@@ -56,10 +55,10 @@ int  main(int argc, char* argv[])
     sol.set_bath_cluster(&dfpt);
 
     // Step 4: run_each_cluster 
-    sol.run_each_clusters();
+    sol.run_each_clusters();//one of function of EnsembleCCE
 
     // Step 5: post_treatment
-    sol.post_treatment();
+    sol.post_treatment();//post treatment to get data from the evolution result
 
     LOG(INFO) << "my_rank = " << my_rank << "  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Program ends ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"; 
 
@@ -128,7 +127,7 @@ po::variables_map ParseCommandLineOptions(int argc, char* argv[])
         ("state0,a",         po::value<int>()->default_value(0),                         "Central spin state index - a")
         ("state1,b",         po::value<int>()->default_value(1),                         "Central spin state index - b")
 
-        ("cce,c",            po::value<int>()->default_value(3),                         "CCE order")
+        ("cce,c",            po::value<int>()->default_value(4),                         "CCE order")
         ("cutoff,d",         po::value<double>()->default_value(300.0),                  "Cut-off distance of bath spins")
         ("polarization,z",   po::value<string>()->default_value("0.0 0.0 0.0"),          "bath spin polarization")
         ("dephasing_rate,r", po::value<double>()->default_value(10000.0),                "dephasing rate of bath spins")
@@ -138,7 +137,7 @@ po::variables_map ParseCommandLineOptions(int argc, char* argv[])
         ("num_cell,u",       po::value<int>()->default_value(8),                         "atom num in unit cell (default diamond)")
         ("concentration,C",  po::value<double>()->default_value(1.0),                    "bath concentration in ppm")
         ("max_number,M",     po::value<int>()->default_value(2000),                      "Max bath spin number")
-        ("number,N",         po::value<int>()->default_value(100),                       "bath spin number")
+        ("number,N",         po::value<int>()->default_value(15),                       "bath spin number")
         ("seed,D",           po::value<int>()->default_value(1),                         "bath seed")
         ("isotope",          po::value<string>()->default_value("E"),                    "bath spin isotope")
         ("coord_file,F",     po::value<string>()->default_value("coord.xyz"),            "export coordinates to file")

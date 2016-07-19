@@ -35,7 +35,7 @@ vec dipole(const cSPIN& spin1, const cSPIN& spin2)
     return prefactor*res;
 };
 
-vec zeeman(const cSPIN&spin, const vec& magB)
+vec zeeman(const cSPIN& spin, const vec& magB)
 {
     double bx=magB[0], by=magB[1], bz=magB[2];
     double g=spin.get_gamma();

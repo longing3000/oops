@@ -8,6 +8,7 @@ cx_vec VEC;
 vec    TIME_LIST;
 SumKronProd SKP;
 cx_double PREFACTOR;
+extern string DEBUG_PATH;
 
 void prepare_data(string filename);
 void test_small_mat();
@@ -18,7 +19,7 @@ cx_mat test_very_large_mat_GPU();
 
 int  main(int argc, char* argv[])
 {
-    string filename = "./dat/input/RoyCoord.xyz4";
+    string filename = "./dat_example/input/C13Bath/RoyCoord.xyz4";
     prepare_data(filename);
 
     test_small_mat();
@@ -61,6 +62,7 @@ void prepare_data(string filename)
     PREFACTOR = cx_double(0.0, -1.0);
     MAT = lv.getMatrix(); 
     cout << "hamiltonian mat generated." <<endl;
+    lv.saveMatrix("lv");
 
     SKP =lv.getKronProdForm();
 
@@ -69,6 +71,7 @@ void prepare_data(string filename)
     psi.setComponent(0, 1.0);
     VEC = psi.getVector();
     cout << "vector generated." <<endl;
+    psi.saveVector("psi");
 
     TIME_LIST = linspace<vec>(0.01, 0.1, 10);
 }/*}}}*/

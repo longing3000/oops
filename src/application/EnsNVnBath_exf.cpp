@@ -1,5 +1,5 @@
 #include "include/app/app.h"
-#include "include/app/ensemble_cce.h"
+#include "include/app/ensemble_cce_exf.h"
 
 _INITIALIZE_EASYLOGGINGPP
 
@@ -36,7 +36,7 @@ int  main(int argc, char* argv[])
     
     LOG(INFO) << "my_rank = " << my_rank << "  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv Program begins vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"; 
 
-    EnsembleCCE sol(my_rank, worker_num, para);
+    EXFEnsembleCCE sol(my_rank, worker_num, para);
 
     // Step 1: make a defect center
     NVCenter nv = create_defect_center(para);  
@@ -71,7 +71,7 @@ po::variables_map ParseCommandLineOptions(int argc, char* argv[])
 {/*{{{*/
     ////////////////////////////////////////////////////////////////////////////////
     //{{{ record command line options
-    string output_filename("EnsNVnBath");
+    string output_filename("EnsNVnBath_exf");
     string command_opt("");
     for(int i=1; i<argc; ++i)
         command_opt += argv[i];
@@ -106,7 +106,7 @@ po::variables_map ParseCommandLineOptions(int argc, char* argv[])
     ////////////////////////////////////////////////////////////////////////////////
 
     ////////////////////////////////////////////////////////////////////////////////
-    //{{{ Parse opti ons
+    //{{{ Parse options
     po::variables_map para;
     po::options_description desc("Allowed options");
     desc.add_options()
@@ -122,7 +122,7 @@ po::variables_map ParseCommandLineOptions(int argc, char* argv[])
         ("state1,b",         po::value<int>()->default_value(1),                         "Central spin state index - b")
 
         ("cce,c",            po::value<int>()->default_value(4),                         "CCE order")
-        ("cutoff,d",         po::value<double>()->default_value(10),                    "Cut-off distance of bath spins")
+        ("cutoff,d",         po::value<double>()->default_value(6.0),                    "Cut-off distance of bath spins")
         ("polarization,z",   po::value<string>()->default_value("0.0 0.0 0.0"),          "bath spin polarization (not used)")
         ("dephasing_rate,r", po::value<double>()->default_value(0.0),                    "dephasing rate of bath spins")
         ("dephasing_axis,x", po::value<string>()->default_value("1.0 1.0 1.0"),          "dephasing axis of bath spins")
@@ -131,12 +131,17 @@ po::variables_map ParseCommandLineOptions(int argc, char* argv[])
         ("seed,D",           po::value<int>()->default_value(1),                         "bath seed (not used)")
         ("isotope",          po::value<string>()->default_value("E"),                    "bath spin isotope (not used)")
 
+        ("input_data,i",     po::value<string>()->default_value("external_field.xyz"),    "Input external field file name")
+        ("omega,o",          po::value<double>()->default_value(0.0),                      "external field frequency")
+        ("field axis",       po::value<string>()->default_value("1.0 0.0 0.0"),          "external field axis")
+
+
         ("nTime,n",          po::value<int>()->default_value(101),                       "Number of time points")
         ("start,s",          po::value<double>()->default_value(0.0),                    "Start time (in unit of sec.)")
         ("finish,f",         po::value<double>()->default_value(0.002),                  "Finish time (in unit of sec.)")
-        ("magnetic_field,B", po::value<string>()->default_value("0.1 0.1 0.1"),          "magnetic field vector in Tesla")
-        ("pulse,p",          po::value<string>()->default_value("CPMG"),                 "Pulse name")
-        ("pulse_num,m",      po::value<int>()->default_value(1),                         "Pulse number")
+        ("magnetic_field,B", po::value<string>()->default_value("0.0 0.0 0.2"),          "magnetic field vector in Tesla")
+        ("pulse,p",          po::value<string>()->default_value("CPMG"),                 "Pulse name(not used)")
+        ("pulse_num,m",      po::value<int>()->default_value(1),                         "Pulse number(not used)")
         ;
 
     po::store(parse_command_line(argc, argv, desc), para);
@@ -155,7 +160,7 @@ po::variables_map ParseCommandLineOptions(int argc, char* argv[])
     }
     if (para.count("initialize")) {
         string path = getenv("OOPS_PATH");
-        string cmd = "cp -r " + path + "/src/dat_example dat" ;
+        string cmd = "cp -r " + path + "/src/dat dat" ;
         cout << cmd << endl;
         system( cmd.c_str() );
         cout << "default dat folder initialized." << endl;

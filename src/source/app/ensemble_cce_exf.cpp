@@ -1,12 +1,13 @@
-#include "include/app/ensemble_cce.h"
+#include "include/app/ensemble_cce_exf.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
-//{{{  EnsembleCCE
-void EnsembleCCE::set_parameters()
-{
+//{{{  EXFEnsembleCCE
+void EXFEnsembleCCE::set_parameters()
+{/*{{{*/
     string input_filename  = _para["input"].as<string>();
     string output_filename = _para["output"].as<string>();
+    string input_field_filename  = _para["input_data"].as<string>();
 
     _state_idx0            = _para["state0"].as<int>();
     _state_idx1            = _para["state1"].as<int>();
@@ -17,70 +18,70 @@ void EnsembleCCE::set_parameters()
     _bath_dephasing_rate   = _para["dephasing_rate"].as<double>();
     _bath_dephasing_axis   = vec( _para["dephasing_axis"].as<string>() );
 
-    _nTime                 = _para["nTime"].as<int>();
     _t0                    = _para["start"].as<double>(); 
-    _t1                    = _para["finish"].as<double>(); 
+    _t1                    = _para["finish"].as<double>();
 
-    _pulse_name            = _para["pulse"].as<string>();
-    _pulse_num             = _para["pulse_num"].as<int>();
+    _field_axis            = vec( _para["field axis"].as<string>() );//two confusion, the vector?, as<double>?
+    _omega                 =_para["omega"].as<double>();
     _magB                  = vec( _para["magnetic_field"].as<string>() );
     
     _bath_spin_filename = INPUT_PATH + input_filename;
     _result_filename    = OUTPUT_PATH + output_filename + ".mat";
-    _time_list = linspace<vec>(_t0, _t1, _nTime);
-}
+    _external_field_filename = INPUT_PATH + input_field_filename;
+    set_external_field(_external_field_filename);
+    _time_list=linspace<vec>(_t0,_t1,_nTime);
 
-vec EnsembleCCE::cluster_evolution(int cce_order, int index)
-{
+}/*}}}*/
+
+vec EXFEnsembleCCE::cluster_evolution(int cce_order, int index)
+{/*{{{*/
     vector<cSPIN> spin_list = _my_clusters.getCluster(cce_order, index);
     
     //creat for difference subclass
-    Hamiltonian hami0 = create_spin_hamiltonian(_center_spin, _state_pair.first, spin_list);
-    Hamiltonian hami1 = create_spin_hamiltonian(_center_spin, _state_pair.second, spin_list);
-    LiouvilleSpaceOperator dephase = create_incoherent_operator(spin_list);
-
-    //if not apply dephase, then set dephase rate equals 0.
-    QuantumOperator lvA = create_spin_liouvillian(hami0, hami1) + dephase;
-    QuantumOperator lvB = create_spin_liouvillian(hami1, hami0) + dephase;
-
-    //for CenterSpinControl, using riffle, for BathSpinControl, set manuly.
-    vector<QuantumOperator> lv_list = riffle( lvA,  lvB, _pulse_num);
-    DensityOperator ds = create_spin_density_state(spin_list);//no polarization
-    vector<double> time_segment = Pulse_Interval(_pulse_name, _pulse_num);
-
-    PiecewiseFullMatrixVectorEvolution kernel(lv_list, time_segment, ds);
-    kernel.setTimeSequence( _t0, _t1, _nTime);
+    vector<QuantumOperator> lv_list;
+    vector<double> time_segment;
     
+    //change to _amplitude_size().
+    for(int i =0; i<_amplitude_list.size(); ++i)
+    {
+        Hamiltonian hami0 = create_spin_hamiltonian(_center_spin, _state_pair.first, spin_list,_amplitude_list[i],_phase_list[i],_field_axis,_omega);
+        Hamiltonian hami1 = create_spin_hamiltonian(_center_spin, _state_pair.second, spin_list,_amplitude_list[i],_phase_list[i],_field_axis,_omega);
+        LiouvilleSpaceOperator dephase = create_incoherent_operator(spin_list);
+        QuantumOperator lvA = create_spin_liouvillian(hami0, hami1) + dephase;
+        lv_list.push_back(lvA);
+        time_segment.push_back(_time_list[i+1]-_time_list[i]);
+    }
+    DensityOperator ds = create_spin_density_state(spin_list);//no polarization
+    //the length of lv_list is n, then the length of _time_list is n-1;this may occurs wrong!attention.
+    NEQPiecewiseFullMatrixVectorEvolution kernel(lv_list, time_segment, ds);
+    kernel.setTimeSequence( _t0, _t1, _nTime);
+
     ClusterCoherenceEvolution dynamics(&kernel);
     dynamics.run();
-    
+
     return calc_observables(&kernel);
-}
+}/*}}}*/
 
-Hamiltonian EnsembleCCE::create_spin_hamiltonian(const cSPIN& espin, const PureState& center_spin_state, const vector<cSPIN>& spin_list)
+Hamiltonian EXFEnsembleCCE::create_spin_hamiltonian(const cSPIN& espin, const PureState& center_spin_state, const vector<cSPIN>& spin_list, const double& amplitude, const double& phase, const vec& axis, const double& omega)
 {/*{{{*/
-    //this function don't the same for CenterSpinControl&BathSpinControl
-    //the same for Liouville
-    SpinDipolarInteraction dip(spin_list);
-    //dip.IsRWA(bool& IsRWA);
+    RWASpinDipolarInteraction dip(spin_list);
 
-    SpinZeemanInteraction zee(spin_list, _magB);
-    //zee.IsRWA(bool& IsRWA);
+    RWASpinZeemanInteraction zee(spin_list, _magB,_omega);
 
-    DipolarField hf_field(spin_list, espin, center_spin_state);
-    //hf_field.IsRWA(bool& IsRWA);
+    RWADipolarField hf_field(spin_list, espin, center_spin_state);
     
-    //ExternalField ex_field(spin_list, A, phi)//vector<double> A, vector<double> phi
+    ExternalField ex_field(spin_list, amplitude, phase,axis);
 
     Hamiltonian hami(spin_list);
     hami.addInteraction(dip);
     hami.addInteraction(zee);
     hami.addInteraction(hf_field);
+    hami.addInteraction(ex_field);
     hami.make();
     return hami;
 }/*}}}*/
 
-LiouvilleSpaceOperator EnsembleCCE::create_incoherent_operator(const vector<cSPIN>& spin_list)
+LiouvilleSpaceOperator EXFEnsembleCCE::create_incoherent_operator(const vector<cSPIN>& spin_list)
 {/*{{{*/
     double rate = 2.0*datum::pi*_bath_dephasing_rate;
     vec axis = normalise(_bath_dephasing_axis);
@@ -92,7 +93,7 @@ LiouvilleSpaceOperator EnsembleCCE::create_incoherent_operator(const vector<cSPI
     return dephaseOperator;
 
 }/*}}}*/
-Liouvillian EnsembleCCE::create_spin_liouvillian(const Hamiltonian& hami0, const Hamiltonian hami1)
+Liouvillian EXFEnsembleCCE::create_spin_liouvillian(const Hamiltonian& hami0, const Hamiltonian hami1)
 {/*{{{*/
     Liouvillian lv0(hami0, SHARP);
     Liouvillian lv1(hami1, FLAT);
@@ -100,7 +101,7 @@ Liouvillian EnsembleCCE::create_spin_liouvillian(const Hamiltonian& hami0, const
     return lv;
 }/*}}}*/
 
-DensityOperator EnsembleCCE::create_spin_density_state(const vector<cSPIN>& spin_list)
+DensityOperator EXFEnsembleCCE::create_spin_density_state(const vector<cSPIN>& spin_list)
 {/*{{{*/
     SpinPolarization p(spin_list, _bath_polarization);
 
@@ -111,7 +112,7 @@ DensityOperator EnsembleCCE::create_spin_density_state(const vector<cSPIN>& spin
     return ds;
 }/*}}}*/
 
-vec EnsembleCCE::calc_observables(QuantumEvolutionAlgorithm* kernel)
+vec EXFEnsembleCCE::calc_observables(QuantumEvolutionAlgorithm* kernel)
 {/*{{{*/
     int dim = kernel->getMatrixDim();
     cx_vec init_st = kernel->getInitalState();
@@ -123,6 +124,7 @@ vec EnsembleCCE::calc_observables(QuantumEvolutionAlgorithm* kernel)
 }/*}}}*/
 //}}}
 ////////////////////////////////////////////////////////////////////////////////
+
 
 
 

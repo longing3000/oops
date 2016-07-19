@@ -195,3 +195,124 @@ SpinDephasing::SpinDephasing(const vector<cSPIN>& spin_list, const double dephas
 }
 //}}}
 ////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+//{{{ ExternalField
+ExternalField::ExternalField()
+{
+    //LOG(INFO) << "Default constructor:ExternalField." << endl;
+}
+
+ExternalField::~ExternalField()
+{
+    //LOG(INFO) << "Default destructor:ExternalField." << endl;
+}
+
+ExternalField::ExternalField(const vector<cSPIN>& spin_list, const double& amplitude, const double& phase, const vec& axis)
+{
+    _space = Hilbert;
+    _spin_list=spin_list;
+
+    _domain=SingleSpin(spin_list);
+    _form=SingleSpinInteractionForm(_domain);
+    _coeff=ExternalFieldInteractionCoeff(_domain,amplitude,phase,axis);
+
+    make();
+}
+//}}}
+//----------------------------------------------------------------------------//
+//{{{ RWASpinDipolarInteraction 
+RWASpinDipolarInteraction::RWASpinDipolarInteraction()
+{ //LOG(INFO) << "Default constructor: RWASpinDipolarInteraction.";
+}
+
+RWASpinDipolarInteraction::RWASpinDipolarInteraction(const vector<cSPIN>& spin_list)
+{ //LOG(INFO) << "Constructor:RWASpinDipolarInteraction with spin_list";
+    _space = Hilbert;
+    _spin_list=spin_list;
+
+    _domain=SpinPair(spin_list);
+    _form=TwoSpinInteractionForm(_domain);
+    _coeff=RWADipolarInteractionCoeff(_domain);
+    
+    make();
+}
+
+RWASpinDipolarInteraction::~RWASpinDipolarInteraction()
+{ //LOG(INFO) << "Default destructor: RWASpinDipolarInteraction.";
+}
+//}}}
+//----------------------------------------------------------------------------//
+//{{{ RWASpinZeemanInteraction 
+RWASpinZeemanInteraction::RWASpinZeemanInteraction()
+{ //LOG(INFO) << "Default constructor: RWASpinZeemanInteraction.";
+}
+
+RWASpinZeemanInteraction::RWASpinZeemanInteraction(const vector<cSPIN>& spin_list, const vec& magB, const double& omega)
+{ //LOG(INFO) << "Constructor: RWASpinZeemanInteraction with spin_list and magB";
+
+    _space = Hilbert;
+    _spin_list=spin_list;
+
+    _domain=SingleSpin(spin_list);
+    _form=SingleSpinInteractionForm(_domain);
+    _coeff=RWAZeemanInteractionCoeff(_domain, magB, omega);
+    
+    make();
+}
+
+RWASpinZeemanInteraction::~RWASpinZeemanInteraction()
+{ //LOG(INFO) << "Default destructor: RWASpinZeemanInteraction.";
+}
+//}}}
+//----------------------------------------------------------------------------//
+//{{{ RWADipolarField 
+RWADipolarField::RWADipolarField()
+{ //LOG(INFO) << "Default constructor: RWADipolarField";
+}
+
+RWADipolarField::RWADipolarField(const vector<cSPIN>& spin_list, const cSPIN& center_spin, const PureState& state)
+{ //LOG(INFO) << "Constructor: RWADipolarField with center spin and spin state";
+
+    _space = Hilbert;
+    _spin_list=spin_list;
+
+    _domain=SingleSpin(spin_list);
+    _form=SingleSpinInteractionForm(_domain);
+    _coeff=RWADipolarFieldInteractionCoeff(_domain, center_spin, state);
+
+    make();
+}
+RWADipolarField::RWADipolarField(const vector<cSPIN>& spin_list, const vector<cSPIN>& source_list, const vector<PureState>& state_list)
+{
+    _space = Hilbert;
+    _spin_list=spin_list;
+
+    _domain=SingleSpin(spin_list);
+    _form=SingleSpinInteractionForm(_domain);
+    _coeff=RWADipolarFieldInteractionCoeff(_domain, source_list, state_list);
+
+    make();
+}
+RWADipolarField::RWADipolarField(const vector<cSPIN>& spin_list, const vector<cSPIN>& source_list, const vector<PureState>& state_list, const uvec& exclude_idx)
+{
+    _space = Hilbert;
+    _spin_list=spin_list;
+
+    _domain=SingleSpin(spin_list);
+    _form=SingleSpinInteractionForm(_domain);
+
+    vec mask = ones<vec>(source_list.size() );
+    for(int i=0; i< exclude_idx.n_elem; ++i)
+        mask( exclude_idx[i]) = 0.0;
+    _coeff=RWADipolarFieldInteractionCoeff(_domain, source_list, state_list, mask);
+
+    make();
+}
+
+RWADipolarField::~RWADipolarField()
+{ //LOG(INFO) << "Default destructor: RWADipolarField";
+}
+//}}}
+////////////////////////////////////////////////////////////////////////////////
+

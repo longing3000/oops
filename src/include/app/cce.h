@@ -19,6 +19,7 @@ public:
     void set_bath_cluster(cSpinGrouping * spin_grouping);
     void run_each_clusters();
     void post_treatment();
+    void set_external_field(string& external_filed_filename);
 
     cSPIN           getCenterSpin() const {return _center_spin;}
     cSpinCollection getSpinCollecion() const {return _bath_spins;}
@@ -31,7 +32,7 @@ protected:
     ConfigXML        _cfg;
     string           _bath_spin_filename;
     string           _result_filename;
-    
+    string           _external_field_filename;
     // Defect Center
     DefectCenter*    _defect_center;
     string           _center_spin_name;
@@ -58,7 +59,12 @@ protected:
     double           _t0;
     double           _t1;
     int              _nTime;
+
     vec              _time_list;
+    vector<double>   _amplitude_list;//change to vector
+    vector<double>   _phase_list;//change to vector
+    vec              _field_axis;
+    double           _omega;
 
     // MPI
     int              _my_rank;
@@ -70,11 +76,12 @@ protected:
     vector<mat>      _cce_evovle_result_tilder;
     mat              _final_result;
     mat              _final_result_each_order;
-
+    
 private:
     virtual void     set_parameters()=0;
     virtual vec      cluster_evolution(int cce_order, int index)=0;
 
+    
     void             job_distribution();
     void             DataGathering(mat& resMat, int cce_order, int clst_num);
     void             cce_coherence_reduction();

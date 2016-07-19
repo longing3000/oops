@@ -30,7 +30,7 @@ public:
      cSpinInteraction();
      cSpinInteraction(const vector<cSPIN>& spin_list);
      cSpinInteraction(const vector<cSPIN>& spin_list, Space sp);
-    ~cSpinInteraction();
+     ~cSpinInteraction();
 
     void make();
     SumKronProd& getSumKronProd(){return _sum_kron_prod;};
@@ -115,6 +115,61 @@ private:
 };
 //}}}
 ////////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////////
+//{{{ ExternalField
+class ExternalField:public cSpinInteraction
+{
+public:
+    ExternalField();
+    ExternalField(const vector<cSPIN>& spin_list, const double& amplitude, const double& phase, const vec& axis);
+    ~ExternalField();
+protected:
+private:
+};
+//}}}
+//----------------------------------------------------------------------------//
+//{{{ RWASpinDipolarInteraction
+class RWASpinDipolarInteraction:public cSpinInteraction
+{
+public:
+    RWASpinDipolarInteraction();
+    RWASpinDipolarInteraction(const vector<cSPIN>& spin_list);
+    ~RWASpinDipolarInteraction();
+protected:
+private:
+};
+//}}}
+//----------------------------------------------------------------------------//
+//{{{ RWASpinZeemanInteraction
+class RWASpinZeemanInteraction:public cSpinInteraction
+{
+public:
+    RWASpinZeemanInteraction();
+    RWASpinZeemanInteraction(const vector<cSPIN>& spin_list, const vec& magB, const double& omega);
+    ~RWASpinZeemanInteraction();
+protected:
+private:
+};
+//}}}
+//----------------------------------------------------------------------------//
+//{{{ RWADipolarField 
+class RWADipolarField:public cSpinInteraction
+{
+public:
+    RWADipolarField();
+    RWADipolarField(const vector<cSPIN>& spin_list, const cSPIN& center_spin, const PureState& state);
+    RWADipolarField(const vector<cSPIN>& spin_list, const vector<cSPIN>& source_list, const vector<PureState>& state_list);
+    RWADipolarField(const vector<cSPIN>& spin_list, const vector<cSPIN>& source_list, const vector<PureState>& state_list, const uvec& exclude_idx);
+    ~RWADipolarField();
+protected:
+private:
+};
+//}}}
+////////////////////////////////////////////////////////////////////////////////
+
+
 
 /// @}
 

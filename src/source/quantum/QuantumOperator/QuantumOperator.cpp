@@ -7,21 +7,21 @@ void QuantumOperator::saveMatrix(string name)
 {
     cx_mat m= this->getMatrix();
     mat m_r = real(m).t();
-    mat m_i = -imag(m).t();
+    mat m_i = imag(m).t();//why minus???
 
-    mxArray *pArray = mxCreateDoubleMatrix(_dimension,_dimension,mxCOMPLEX);
+    mxArray *pArray = mxCreateDoubleMatrix(_dimension,_dimension,mxCOMPLEX);//generate mxArray, used to save complex result!
 
-    int dim2=_dimension*_dimension;
-    memcpy((void *)(mxGetPr(pArray)), (void *) m_r.memptr(), dim2*sizeof(double));
+    int dim2=_dimension*_dimension;//matrix dimension
+    memcpy((void *)(mxGetPr(pArray)), (void *) m_r.memptr(), dim2*sizeof(double));//memory copy, faster
     memcpy((void *)(mxGetPi(pArray)), (void *) m_i.memptr(), dim2*sizeof(double));
     
-    string dbg_filename = DEBUG_PATH + name + ".mat";
+    string dbg_filename = DEBUG_PATH + name + ".mat";//save place
     cout << dbg_filename << " is exported for debug! " << endl;
-    MATFile *mFile = matOpen(dbg_filename.c_str(), "w");
-    matPutVariableAsGlobal(mFile, name.c_str(), pArray);
-    matClose(mFile);
+    MATFile *mFile = matOpen(dbg_filename.c_str(), "w");//open mat file to write!
+    matPutVariableAsGlobal(mFile, name.c_str(), pArray);//write pArray into mFile
+    matClose(mFile);//close mat file
 
-    mxDestroyArray(pArray);
+    mxDestroyArray(pArray);//release pointer.
 }
 #else
 void QuantumOperator::saveMatrix(string name)

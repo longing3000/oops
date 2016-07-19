@@ -3,6 +3,7 @@
 #include <armadillo>
 #include "include/spin/Spin.h"
 #include <cassert>
+#include <math.h>
 
 using namespace arma;
 

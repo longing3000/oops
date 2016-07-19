@@ -11,7 +11,8 @@ using namespace std;
 ////////////////////////////////////////////////////////////////////////////////
 //{{{ cSpinSource
 cSpinSource::cSpinSource()
-{ //LOG(INFO) << "Default constructor: cSpinSource.";
+{
+    //LOG(INFO) << "Default constructor: cSpinSource.";
 }
 
 cSpinSource::~cSpinSource()
@@ -43,10 +44,13 @@ void cSpinSource::export_coordinates(const string& filename)
 ////////////////////////////////////////////////////////////////////////////////
 //{{{ cSpinSourceFromFile
 cSpinSourceFromFile::cSpinSourceFromFile()
-{ //LOG(INFO) << "Default constructor: cSpinSourceFromFile.";
+{ 
+    //LOG(INFO) << "Default constructor: cSpinSourceFromFile.";
 }
 cSpinSourceFromFile::cSpinSourceFromFile(string filename)
-{ _filename=filename; }
+{ 
+    _filename=filename;
+}
 
 cSpinSourceFromFile::~cSpinSourceFromFile()
 { //LOG(INFO) << "Default destructor: cSpinSourceFromFile.";
@@ -62,10 +66,10 @@ vector<cSPIN>& cSpinSourceFromFile::generate()
     if(coord.fail())
      {
         cout<< "Input spin source opening failed."<<endl;
-        if(!coord) assert(0);
+        if(!coord) assert(1);
      }
     
-
+    
     coord >> nbath;
     for (int i = 0; i < nbath; ++i)
     {

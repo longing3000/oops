@@ -10,12 +10,8 @@ vec    TIME_LIST;
 SumKronProd SKP;
 cx_double PREFACTOR;
 
+
 void prepare_data(string filename);
-void test_small_mat();
-cx_mat test_large_mat();
-cx_mat test_large_mat_sparse();
-cx_mat test_very_large_mat_CPU();
-cx_mat test_very_large_mat_GPU();
 
 int  main(int argc, char* argv[])
 {
@@ -28,11 +24,11 @@ int  main(int argc, char* argv[])
 void prepare_data(string filename)
 {/*{{{*/
     // create defect center
-    double x =  0.0, y = 0.0, z = 0.89175;
+    double x =  0.0, y = 0.0, z = 0.0;
     vec coord; coord << x << y << z;
     NVCenter nv(NVCenter::N14, coord);//creat a defect center call NVCenter 
     
-    double magBx = 0.0,  magBy =  0.0, magBz = 1e-5;
+    double magBx = 0.0,  magBy =  0.0, magBz = 0.2;
     nv.set_magB(magBx, magBy, magBz);
     nv.make_espin_hamiltonian();//nv state
 
@@ -59,40 +55,49 @@ void prepare_data(string filename)
 
 
     vec magB; magB << magBx << magBy << magBz;
-    SpinZeemanInteraction zee(sl, magB);//Zeeman interaction of bath spins
-    SpinDipolarInteraction dip(sl);//Dipolar interaction of bath spins
-    DipolarField hf_field0(sl, espin, st0);//hyperfine interaction from spins state1
-    DipolarField hf_field1(sl, espin, st1);//hyperfine interaction from center spins state2
+    double amplitude=10000.0;
+    double phase=1.5;double omega=sl[0].get_gamma()*magBz;
+    vec field_axis;field_axis << 1.0 << 0.0 << 0.0;
+    RWASpinZeemanInteraction zee(sl, magB,omega);//Zeeman interaction of bath spins
+    RWASpinDipolarInteraction dip(sl);//Dipolar interaction of bath spins
+    RWADipolarField hf_field0(sl, espin, st0);//hyperfine interaction from spins state1
+    RWADipolarField hf_field1(sl, espin, st1);//hyperfine interaction from center spins state2
+    ExternalField ex_field(sl,amplitude,phase,field_axis); 
 
     Hamiltonian hami0(sl);
     hami0.addInteraction(zee);
     hami0.addInteraction(dip);
     hami0.addInteraction(hf_field0);
+    hami0.addInteraction(ex_field);
     hami0.make();//zee+dip+hf_field
 
     Hamiltonian hami1(sl);
     hami1.addInteraction(zee);
     hami1.addInteraction(dip);
     hami1.addInteraction(hf_field1);
+    hami1.addInteraction(ex_field);
     hami1.make();//zee+dip-hf_field
 
 
-    cout << hami0.getMatrix() << endl;
-    cout << hami1.getMatrix() << endl;
+    //cout << hami0.getMatrix() << endl;
+    //cout << hami1.getMatrix() << endl;
+    hami0.saveMatrix("hami0");
+    hami1.saveMatrix("hami1");
 
     Liouvillian lv0(hami0, SHARP);
     Liouvillian lv1(hami1, FLAT);
     Liouvillian lvH = lv0 - lv1;//Liouvillian
 
 
-    double rate = 2.0*datum::pi*1e4;//dephasing rate
-    vec axis; axis << 1.0 << 1.0 << 1.0;
-    SpinDephasing dephasing(sl, rate, normalise(axis));//set dephaing for each spins
-    LiouvilleSpaceOperator dephaseOperator(sl);
-    dephaseOperator.addInteraction(dephasing);
-    dephaseOperator.make();//generate dephasing Liouvillian
-
-    QuantumOperator lv = lvH + dephaseOperator;
+//    double rate =0.0*2.0*datum::pi*1e4;//dephasing rate
+//    vec axis; axis << 1.0 << 1.0 << 1.0;
+//    SpinDephasing dephasing(sl, rate, normalise(axis));//set dephaing for each spins
+//    LiouvilleSpaceOperator dephaseOperator(sl);
+//    dephaseOperator.addInteraction(dephasing);
+//    dephaseOperator.make();//generate dephasing Liouvillian
+//
+//    QuantumOperator lv = lvH + dephaseOperator;
+    QuantumOperator lv = lvH;
     lv.saveMatrix("lv");//generate all the Liouvillian
 
 
@@ -102,9 +107,7 @@ void prepare_data(string filename)
     ds.addStateComponent(p);
     ds.make();//generate initial state in Hilbert space 
     ds.makeVector();//generate initial state in Liouville space
-    cout << ds.getVector() << endl;
-    ds.saveVector("state_vec");
-    cout << ds.getMatrix() << endl;
-    ds.saveMatrix("state_mat");
+    ds.saveVector("state_vec");//saveVector() function is wrong!!!
+    ds.saveMatrix("state_mat");//saveMatrix() function is wrong!!!
 
 }/*}}}*/

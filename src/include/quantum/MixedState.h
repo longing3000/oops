@@ -5,7 +5,10 @@
 #include "include/spin/SpinInteraction.h"
 #include "include/quantum/HilbertSpaceOperator.h"
 #include "include/quantum/QuantumState.h"
+#include <string>
 
+using namespace std;
+extern string DEBUG_PATH;
 /// \addtogroup QuantumState QuantumState
 /// @{
 
@@ -47,6 +50,7 @@ public:
 
     SumKronProd getKronProdForm(){return _op.getKronProdForm();};
     cx_mat getMatrix(){return _op.getMatrix();};
+    void saveMatrix(string filename);
 protected:
 private:
     HilbertSpaceOperator _op;

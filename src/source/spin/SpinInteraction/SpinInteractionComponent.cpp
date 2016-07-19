@@ -395,6 +395,7 @@ ZeemanInteractionCoeff::~ZeemanInteractionCoeff()
 }
 //}}}
 //----------------------------------------------------------------------------//
+///////////////////////////////////////////////////////////////////////////////
 //{{{ DipolarFieldInteractionCoeff
 DipolarFieldInteractionCoeff::DipolarFieldInteractionCoeff(const cSpinInteractionDomain& domain, const cSPIN& center_spin, const PureState& state)
 { 
@@ -495,3 +496,148 @@ SpinDephasingRate::SpinDephasingRate(const cSpinInteractionDomain& domain, const
 //}}}
 ////////////////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////////////////
+//{{{ ExternalFieldInteractionCoeff
+ExternalFieldInteractionCoeff::ExternalFieldInteractionCoeff(const cSpinInteractionDomain& domain, const double& amplitude, const double& phase, const vec& axis)
+{
+    _nCoeff = 6;
+    vector< vector<cSPIN> > sag;
+    sag = domain.getSpinAggregate();
+    vector< vector<cSPIN> >::iterator it;
+    for(it=sag.begin(); it!=sag.end(); ++it)
+    {
+        cSPIN spin0=(*it)[0];
+        vec coeffs;
+        coeffs << amplitude*(axis[0]*(cos(phase)-sin(phase))+axis[1]*(cos(phase)+sin(phase)))/2.0 
+               << amplitude*(axis[1]*(cos(phase)-sin(phase))-axis[0]*(cos(phase)+sin(phase)))/2.0 
+               << 0.0 << 0.0 << 0.0 << 0.0;
+        _coeff_list.push_back(coeffs);
+    }
+}
+
+ExternalFieldInteractionCoeff::~ExternalFieldInteractionCoeff()
+{
+    //LOG(INFO) << "DEafult destructor: ExternalFieldInteractionCoeff.";
+}
+//}}}
+//---------------------------------------------------------------------------//
+//{{{ RWADipolarInteractionCoeff
+RWADipolarInteractionCoeff::RWADipolarInteractionCoeff(const cSpinInteractionDomain& domain)
+{
+    _nCoeff = 9;
+
+    //auto sag = domain.getSpinAggregate();
+    //for(auto it=sag.begin(); it!=sag.end(); ++it)
+    //{
+    //    cSPIN spin0=(*it)[0];    cSPIN spin1=(*it)[1];
+    //    vec coeffs = dipole(spin0, spin1);
+    //    _coeff_list.push_back(coeffs);
+    //}
+    vector< vector<cSPIN> > sag;
+    sag = domain.getSpinAggregate();
+    vector< vector<cSPIN> >::iterator it;
+    for(it=sag.begin(); it!=sag.end(); ++it)
+    {
+        cSPIN spin0=(*it)[0];    cSPIN spin1=(*it)[1];
+        vec coeffs = dipole(spin0, spin1);
+        vec coeffs1;
+        coeffs1 <<  (coeffs[1]-coeffs[4])/2.0 << (coeffs[1]+coeffs[3])/2.0 << 0.0
+                << -(coeffs[1]-coeffs[4])/2.0 << (coeffs[1]+coeffs[3])/2.0 << 0.0
+                << 0.0                        << 0.0                       <<coeffs[8];
+        _coeff_list.push_back(coeffs1);
+    }
+}
+RWADipolarInteractionCoeff::~RWADipolarInteractionCoeff()
+{ //LOG(INFO) << "Default destructor: RWADipolarInteractionCoeff.";
+}
+//}}}
+//----------------------------------------------------------------------------//
+//{{{ RWAZeemanInteractionCoeff
+RWAZeemanInteractionCoeff::RWAZeemanInteractionCoeff(const cSpinInteractionDomain& domain, const vec& magB, const double& omega)
+{
+    _nCoeff = 6;
+
+    //auto sag = domain.getSpinAggregate();
+    //for(auto it=sag.begin(); it!=sag.end(); ++it)
+    //{
+    //    cSPIN spin0=(*it)[0];
+    //    vec coeffs = zeeman(spin0, magB);
+    //    _coeff_list.push_back(coeffs);
+    //}
+    vector< vector<cSPIN> > sag;
+    sag = domain.getSpinAggregate();
+    vector< vector<cSPIN> >::iterator it;
+    for(it=sag.begin(); it!=sag.end(); ++it)
+    {
+        cSPIN spin0=(*it)[0];
+        vec coeffs = zeeman(spin0, magB);
+        vec coeffs1;
+        coeffs1 << 0.0 << 0.0 << coeffs[2]-omega << 0.0 << 0.0 << 0.0;
+        _coeff_list.push_back(coeffs1);
+    }
+}
+RWAZeemanInteractionCoeff::~RWAZeemanInteractionCoeff()
+{ //LOG(INFO) << "Default destructor: RWAZeemanInteractionCoeff.";
+}
+//}}}
+//----------------------------------------------------------------------------//
+//{{{ RWADipolarFieldInteractionCoeff
+RWADipolarFieldInteractionCoeff::RWADipolarFieldInteractionCoeff(const cSpinInteractionDomain& domain, const cSPIN& center_spin, const PureState& state)
+{ 
+    _nCoeff = 6;
+
+    vector< vector<cSPIN> > sag;
+    sag = domain.getSpinAggregate();
+    vector< vector<cSPIN> >::iterator it;
+    for(it=sag.begin(); it!=sag.end(); ++it)
+    {
+        cSPIN spin0=(*it)[0];
+        vec dip_field = dipole_field(spin0, center_spin, state.getVector() );
+        vec coeffs; coeffs << 0.0 << 0.0 << dip_field[2] << 0.0 << 0.0 << 0.0;
+        _coeff_list.push_back(coeffs);
+    }
+}
+RWADipolarFieldInteractionCoeff::RWADipolarFieldInteractionCoeff(const cSpinInteractionDomain& domain, const vector<cSPIN>& spin_list, const vector<PureState>& state_list)
+{
+    _nCoeff = 6;
+
+    vector< vector<cSPIN> > sag;
+    sag = domain.getSpinAggregate();
+    vector< vector<cSPIN> >::iterator it;
+    for(it=sag.begin(); it!=sag.end(); ++it)
+    {
+        cSPIN spin0=(*it)[0];
+
+        vec dip_field = zeros<vec>(3);
+        for(int i=0; i<spin_list.size(); ++i)
+            dip_field += dipole_field(spin0, spin_list[i], state_list[i].getVector() );
+        
+        vec coeffs; coeffs << 0.0 << 0.0 << dip_field[2] << 0.0 << 0.0 << 0.0;
+        _coeff_list.push_back(coeffs);
+    }
+}
+RWADipolarFieldInteractionCoeff::RWADipolarFieldInteractionCoeff(const cSpinInteractionDomain& domain, const vector<cSPIN>& spin_list, const vector<PureState>& state_list, const vec& pre_factor_list)
+{
+    _nCoeff = 6;
+
+    vector< vector<cSPIN> > sag;
+    sag = domain.getSpinAggregate();
+    vector< vector<cSPIN> >::iterator it;
+    for(it=sag.begin(); it!=sag.end(); ++it)
+    {
+        cSPIN spin0=(*it)[0];
+
+        vec dip_field = zeros<vec>(3);
+        for(int i=0; i<spin_list.size(); ++i)
+            dip_field += pre_factor_list[i] * dipole_field(spin0, spin_list[i], state_list[i].getVector() );
+        
+        vec coeffs; coeffs << 0.0 << 0.0 << dip_field[2] << 0.0 << 0.0 << 0.0;
+        _coeff_list.push_back(coeffs);
+    }
+}
+
+RWADipolarFieldInteractionCoeff::~RWADipolarFieldInteractionCoeff()
+{ //LOG(INFO) << "Default destructor: RWADipolarFieldInteractionCoeff";
+}
+//}}}
+////////////////////////////////////////////////////////////////////////////////

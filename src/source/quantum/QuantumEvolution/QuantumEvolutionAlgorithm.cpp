@@ -132,3 +132,35 @@ void PiecewiseFullMatrixMatrixEvolution::perform()
 }
 //}}}
 ////////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////////
+//{{{ NEQPiecewiseFullMatrixVectorEvolution
+NEQPiecewiseFullMatrixVectorEvolution::NEQPiecewiseFullMatrixVectorEvolution(const vector<QuantumOperator>& op_list, const vector<double>& time_segment, const QuantumState& st)
+{
+   _op_list = op_list; 
+   _time_segment = time_segment;
+   _init_state = st;
+    _state_dimension = st.getDimension()*st.getDimension();
+}
+
+void NEQPiecewiseFullMatrixVectorEvolution::perform()
+{
+    _vector_list.push_back(_init_state.getVector());
+
+    vector<cx_mat> expm_list;
+    for(int j=0; j<_op_list.size(); ++j)
+    {
+        MatExp expM(_op_list[j].getMatrix(), -1.0*II* _time_segment[j], MatExp::PadeApproximation); expM.run();
+        expm_list.push_back( expM.getResultMatrix() );
+    }
+    
+    for(int i=0; i<_time_segment.size(); ++i)
+    {
+        cx_vec state_i =expm_list[i]* _vector_list[i];
+        _vector_list.push_back( state_i );
+    }
+}
+//}}}
+////////////////////////////////////////////////////////////////////////////////
+

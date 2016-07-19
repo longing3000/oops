@@ -182,6 +182,48 @@ public:
 };
 //}}}
 ////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+//{{{ ExternalFieldInteractionCoeff
+class ExternalFieldInteractionCoeff:public cSpinInteractionCoeff
+{
+public:
+    ExternalFieldInteractionCoeff(const cSpinInteractionDomain& domain, const double& amplitude, const double& phase, const vec& axis);
+    ~ExternalFieldInteractionCoeff();
+};
+//}}}
+//----------------------------------------------------------------------------//
+//{{{ RWADipolarInteractionCoeff
+class RWADipolarInteractionCoeff:public cSpinInteractionCoeff
+{
+public:
+    RWADipolarInteractionCoeff(const cSpinInteractionDomain& domain);
+    ~RWADipolarInteractionCoeff();
+};
+//}}}
+//----------------------------------------------------------------------------//
+//{{{ RWAZeemanInteractionCoeff
+class RWAZeemanInteractionCoeff:public cSpinInteractionCoeff
+{
+public:
+    RWAZeemanInteractionCoeff(const cSpinInteractionDomain& domain, const vec& magB, const double& omega);
+    ~RWAZeemanInteractionCoeff();
+};
+//}}}
+//----------------------------------------------------------------------------//
+//{{{ RWADipolarFieldInteractionCoeff
+class RWADipolarFieldInteractionCoeff:public cSpinInteractionCoeff
+{
+public:
+    RWADipolarFieldInteractionCoeff(const cSpinInteractionDomain& domain, const cSPIN& center_spin, const PureState& state);
+    RWADipolarFieldInteractionCoeff(const cSpinInteractionDomain& domain, const vector<cSPIN>& spin_list, const vector<PureState>& state_list);
+    RWADipolarFieldInteractionCoeff(const cSpinInteractionDomain& domain, const vector<cSPIN>& spin_list, const vector<PureState>& state_list, const vec& pre_factor_list);
+    ~RWADipolarFieldInteractionCoeff();
+protected:
+private:
+};
+//}}}
+////////////////////////////////////////////////////////////////////////////////
 ///@}
 
 ///@}

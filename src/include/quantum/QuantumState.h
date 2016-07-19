@@ -1,9 +1,16 @@
 #ifndef QUANTUMSTATE_H
 #define QUANTUMSTATE_H
 
-#include <armadillo>
+#ifdef HAS_MATLAB
+#include <mat.h>
+#endif
 
+#include <armadillo>
+#include <string>
+
+using namespace std;
 using namespace arma;
+extern string DEBUG_PATH;
 /// \addtogroup Quantum 
 /// @{
 
@@ -20,6 +27,7 @@ public:
     ~QuantumState();
 
     cx_vec getVector() const {return _vector;};
+    void saveVector(string filename);
     size_t    getDimension() const {return _dimension;};
 protected:
     bool _is_pure;

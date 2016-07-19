@@ -12,7 +12,7 @@
   //#include "omp.h"
 //#endif
 #define MKL_Complex16 std::complex<double>
-#include "mkl.h"
+#include "/opt/intel/mkl/include/mkl.h"
 
 //======================================================================
 // kron_func_v2.cpp

@@ -103,4 +103,26 @@ private:
 
 //}}}
 ////////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////////
+//{{{ NEQPiecewiseFullMatrixVectorEvolution
+class NEQPiecewiseFullMatrixVectorEvolution:public QuantumEvolutionAlgorithm
+{
+public:
+    NEQPiecewiseFullMatrixVectorEvolution() {};
+    NEQPiecewiseFullMatrixVectorEvolution(const vector<QuantumOperator>& op_list, const vector<double>& time_segment, const QuantumState& st);
+    ~NEQPiecewiseFullMatrixVectorEvolution() {};
+
+    void perform();
+protected:
+private:
+    vector<QuantumOperator> _op_list;
+    vector<double> _time_segment;
+};
+//}}}
+////////////////////////////////////////////////////////////////////////////////
+
+
+
 #endif
