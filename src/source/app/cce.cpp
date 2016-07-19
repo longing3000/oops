@@ -23,7 +23,7 @@ CCE::CCE(int my_rank, int worker_num, const po::variables_map& para)
 void CCE::set_defect_center(DefectCenter* defect) 
 {
     _defect_center = defect;
-    _center_spin = _defect_center->get_espin();//change back
+    _center_spin = _defect_center->get_espin();
     _state_pair = make_pair( 
             PureState(_defect_center->get_eigen_state(_state_idx0)), 
             PureState(_defect_center->get_eigen_state(_state_idx1)) ); 

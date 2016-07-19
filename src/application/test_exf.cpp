@@ -15,7 +15,7 @@ void prepare_data(string filename);
 
 int  main(int argc, char* argv[])
 {
-    string filename = "./dat_example/input/C13Bath/RoyCoord.xyz";
+    string filename = "./dat/input/RoyCoord.xyz";
     prepare_data(filename);
 
     return 0;
@@ -26,11 +26,11 @@ void prepare_data(string filename)
     // create defect center
     double x =  0.0, y = 0.0, z = 0.0;
     vec coord; coord << x << y << z;
-    NVCenter nv(NVCenter::N14, coord);//creat a defect center call NVCenter 
+    NVCenter nv(NVCenter::N14, coord); 
     
     double magBx = 0.0,  magBy =  0.0, magBz = 0.2;
     nv.set_magB(magBx, magBy, magBz);
-    nv.make_espin_hamiltonian();//nv state
+    nv.make_espin_hamiltonian();
 
     cout << nv.get_eigen_state(0) << endl;
     cout << nv.get_eigen_state(1) << endl;
@@ -42,11 +42,9 @@ void prepare_data(string filename)
     cout << "espin coordinate = " << espin.get_coordinate() << endl;
 
     // create bath spins
-    cout << "start to generate." << endl;
     cSpinSourceFromFile spin_file(filename);
     cSpinCollection spins(&spin_file);
     spins.make();
-    cout << "generate success." << endl;
 
     vector<cSPIN> sl = spins.getSpinList();
 
@@ -58,10 +56,10 @@ void prepare_data(string filename)
     double amplitude=10000.0;
     double phase=1.5;double omega=sl[0].get_gamma()*magBz;
     vec field_axis;field_axis << 1.0 << 0.0 << 0.0;
-    RWASpinZeemanInteraction zee(sl, magB,omega);//Zeeman interaction of bath spins
-    RWASpinDipolarInteraction dip(sl);//Dipolar interaction of bath spins
-    RWADipolarField hf_field0(sl, espin, st0);//hyperfine interaction from spins state1
-    RWADipolarField hf_field1(sl, espin, st1);//hyperfine interaction from center spins state2
+    RWASpinZeemanInteraction zee(sl, magB,omega);
+    RWASpinDipolarInteraction dip(sl);
+    RWADipolarField hf_field0(sl, espin, st0);
+    RWADipolarField hf_field1(sl, espin, st1);
     ExternalField ex_field(sl,amplitude,phase,field_axis); 
 
     Hamiltonian hami0(sl);
@@ -69,14 +67,14 @@ void prepare_data(string filename)
     hami0.addInteraction(dip);
     hami0.addInteraction(hf_field0);
     hami0.addInteraction(ex_field);
-    hami0.make();//zee+dip+hf_field
+    hami0.make();
 
     Hamiltonian hami1(sl);
     hami1.addInteraction(zee);
     hami1.addInteraction(dip);
     hami1.addInteraction(hf_field1);
     hami1.addInteraction(ex_field);
-    hami1.make();//zee+dip-hf_field
+    hami1.make();
 
 
     //cout << hami0.getMatrix() << endl;
@@ -86,7 +84,7 @@ void prepare_data(string filename)
 
     Liouvillian lv0(hami0, SHARP);
     Liouvillian lv1(hami1, FLAT);
-    Liouvillian lvH = lv0 - lv1;//Liouvillian
+    Liouvillian lvH = lv0 - lv1;
 
 
 //    double rate =0.0*2.0*datum::pi*1e4;//dephasing rate
@@ -98,16 +96,16 @@ void prepare_data(string filename)
 //
 //    QuantumOperator lv = lvH + dephaseOperator;
     QuantumOperator lv = lvH;
-    lv.saveMatrix("lv");//generate all the Liouvillian
+    lv.saveMatrix("lv");
 
 
-    vec _bath_polarization = zeros<vec>(3);//prepare for initial state of bath spins
-    SpinPolarization p(sl, _bath_polarization);//this means no polarization of the bath spins, which means that the initial state of bath spins is identity matrix
+    vec _bath_polarization = zeros<vec>(3);
+    SpinPolarization p(sl, _bath_polarization);
     DensityOperator ds(sl);
     ds.addStateComponent(p);
-    ds.make();//generate initial state in Hilbert space 
-    ds.makeVector();//generate initial state in Liouville space
-    ds.saveVector("state_vec");//saveVector() function is wrong!!!
-    ds.saveMatrix("state_mat");//saveMatrix() function is wrong!!!
+    ds.make(); 
+    ds.makeVector();
+    ds.saveVector("state_vec");
+    ds.saveMatrix("state_mat");
 
 }/*}}}*/

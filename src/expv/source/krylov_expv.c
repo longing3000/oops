@@ -6,7 +6,7 @@
 
 #ifdef USE_MKL
   #define MKL_Complex16 double _Complex
-  #include "/opt/intel/mkl/include/mkl.h"
+  #include "mkl.h"
 #else
   #include "cblas.h"
 #endif

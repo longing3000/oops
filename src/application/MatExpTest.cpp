@@ -8,7 +8,6 @@ cx_vec VEC;
 vec    TIME_LIST;
 SumKronProd SKP;
 cx_double PREFACTOR;
-extern string DEBUG_PATH;
 
 void prepare_data(string filename);
 void test_small_mat();
@@ -19,7 +18,7 @@ cx_mat test_very_large_mat_GPU();
 
 int  main(int argc, char* argv[])
 {
-    string filename = "./dat_example/input/C13Bath/RoyCoord.xyz4";
+    string filename = "./dat/input/RoyCoord.xyz4";
     prepare_data(filename);
 
     test_small_mat();

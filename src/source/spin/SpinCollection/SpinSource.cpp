@@ -66,7 +66,7 @@ vector<cSPIN>& cSpinSourceFromFile::generate()
     if(coord.fail())
      {
         cout<< "Input spin source opening failed."<<endl;
-        if(!coord) assert(1);
+        if(!coord) assert(0);
      }
     
     

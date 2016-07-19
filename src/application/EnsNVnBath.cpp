@@ -16,7 +16,7 @@ int  main(int argc, char* argv[])
 
     ////////////////////////////////////////////////////////////////////////////////
     //{{{  MPI Preparation
-    int worker_num(2), my_rank(2);
+    int worker_num(0), my_rank(0);
     int mpi_status = MPI_Init(&argc, &argv);
     assert (mpi_status == MPI_SUCCESS);
 
@@ -106,14 +106,14 @@ po::variables_map ParseCommandLineOptions(int argc, char* argv[])
     ////////////////////////////////////////////////////////////////////////////////
 
     ////////////////////////////////////////////////////////////////////////////////
-    //{{{ Parse opti ons
+    //{{{ Parse options
     po::variables_map para;
     po::options_description desc("Allowed options");
     desc.add_options()
         ("help,h", "Print help message")
         ("initialize,I", "Initialize a dat folder")
 
-        ("input,i",          po::value<string>()->default_value("RoyCoord.xyz"), "Input file name")
+        ("input,i",          po::value<string>()->default_value("C13Bath/RoyCoord.xyz"), "Input file name")
         ("output,o",         po::value<string>()->default_value(output_filename),        "Output .mat file of results")
         ("logfile,l",        po::value<string>()->default_value("EnsembleCCE.conf"),     "Config. file of logging")
         
@@ -121,13 +121,13 @@ po::variables_map ParseCommandLineOptions(int argc, char* argv[])
         ("state0,a",         po::value<int>()->default_value(0),                         "Central spin state index - a")
         ("state1,b",         po::value<int>()->default_value(1),                         "Central spin state index - b")
 
-        ("cce,c",            po::value<int>()->default_value(4),                         "CCE order")
-        ("cutoff,d",         po::value<double>()->default_value(10),                    "Cut-off distance of bath spins")
+        ("cce,c",            po::value<int>()->default_value(3),                         "CCE order")
+        ("cutoff,d",         po::value<double>()->default_value(6.0),                    "Cut-off distance of bath spins")
         ("polarization,z",   po::value<string>()->default_value("0.0 0.0 0.0"),          "bath spin polarization (not used)")
         ("dephasing_rate,r", po::value<double>()->default_value(0.0),                    "dephasing rate of bath spins")
         ("dephasing_axis,x", po::value<string>()->default_value("1.0 1.0 1.0"),          "dephasing axis of bath spins")
         ("range,g",          po::value<double>()->default_value(1000.0),                 "bath range [-g, g] (not used)")
-        ("number,N",         po::value<int>()->default_value(15),                       "bath spin number (not used)")
+        ("number,N",         po::value<int>()->default_value(100),                       "bath spin number (not used)")
         ("seed,D",           po::value<int>()->default_value(1),                         "bath seed (not used)")
         ("isotope",          po::value<string>()->default_value("E"),                    "bath spin isotope (not used)")
 

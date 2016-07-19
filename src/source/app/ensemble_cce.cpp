@@ -34,18 +34,15 @@ vec EnsembleCCE::cluster_evolution(int cce_order, int index)
 {
     vector<cSPIN> spin_list = _my_clusters.getCluster(cce_order, index);
     
-    //creat for difference subclass
     Hamiltonian hami0 = create_spin_hamiltonian(_center_spin, _state_pair.first, spin_list);
     Hamiltonian hami1 = create_spin_hamiltonian(_center_spin, _state_pair.second, spin_list);
     LiouvilleSpaceOperator dephase = create_incoherent_operator(spin_list);
 
-    //if not apply dephase, then set dephase rate equals 0.
     QuantumOperator lvA = create_spin_liouvillian(hami0, hami1) + dephase;
     QuantumOperator lvB = create_spin_liouvillian(hami1, hami0) + dephase;
 
-    //for CenterSpinControl, using riffle, for BathSpinControl, set manuly.
     vector<QuantumOperator> lv_list = riffle( lvA,  lvB, _pulse_num);
-    DensityOperator ds = create_spin_density_state(spin_list);//no polarization
+    DensityOperator ds = create_spin_density_state(spin_list);
     vector<double> time_segment = Pulse_Interval(_pulse_name, _pulse_num);
 
     PiecewiseFullMatrixVectorEvolution kernel(lv_list, time_segment, ds);
@@ -59,19 +56,12 @@ vec EnsembleCCE::cluster_evolution(int cce_order, int index)
 
 Hamiltonian EnsembleCCE::create_spin_hamiltonian(const cSPIN& espin, const PureState& center_spin_state, const vector<cSPIN>& spin_list)
 {/*{{{*/
-    //this function don't the same for CenterSpinControl&BathSpinControl
-    //the same for Liouville
     SpinDipolarInteraction dip(spin_list);
-    //dip.IsRWA(bool& IsRWA);
 
     SpinZeemanInteraction zee(spin_list, _magB);
-    //zee.IsRWA(bool& IsRWA);
 
     DipolarField hf_field(spin_list, espin, center_spin_state);
-    //hf_field.IsRWA(bool& IsRWA);
     
-    //ExternalField ex_field(spin_list, A, phi)//vector<double> A, vector<double> phi
-
     Hamiltonian hami(spin_list);
     hami.addInteraction(dip);
     hami.addInteraction(zee);

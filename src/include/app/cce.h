@@ -59,8 +59,8 @@ protected:
     double           _t0;
     double           _t1;
     int              _nTime;
-
     vec              _time_list;
+    
     vector<double>   _amplitude_list;//change to vector
     vector<double>   _phase_list;//change to vector
     vec              _field_axis;
