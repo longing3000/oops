@@ -6,9 +6,10 @@
 void QuantumOperator::saveMatrix(string name)
 {
     cx_mat m= this->getMatrix();
+    cout << "not bad" << endl;
     mat m_r = real(m).t();
     mat m_i = imag(m).t();
-
+    
     mxArray *pArray = mxCreateDoubleMatrix(_dimension,_dimension,mxCOMPLEX);
 
     int dim2=_dimension*_dimension;

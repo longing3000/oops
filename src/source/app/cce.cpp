@@ -59,17 +59,15 @@ void CCE::set_external_field(string& external_filed_filename)
     if(external_field.fail())
     {
         cout << "Input external field opeing failed." << endl;
-        if(!external_field) assert(1);
+        if(!external_field) assert(0);
     }
     
-    int i=0;
-    while(external_field.eof())
+    while(!external_field.eof())
     {
         double res1,res2;
         external_field  >>  res1 >> res2;
         _amplitude_list.push_back(res1);
         _phase_list.push_back(res2);
-        i += 1;
     }
     external_field.close();
     _nTime=_amplitude_list.size()+1;

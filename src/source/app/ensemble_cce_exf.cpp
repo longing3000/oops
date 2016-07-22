@@ -28,20 +28,15 @@ void EXFEnsembleCCE::set_parameters()
     _bath_spin_filename = INPUT_PATH + input_filename;
     _result_filename    = OUTPUT_PATH + output_filename + ".mat";
     _external_field_filename = INPUT_PATH + input_field_filename;
-    set_external_field(_external_field_filename);
-    _time_list=linspace<vec>(_t0,_t1,_nTime);
-
 }/*}}}*/
 
 vec EXFEnsembleCCE::cluster_evolution(int cce_order, int index)
 {/*{{{*/
     vector<cSPIN> spin_list = _my_clusters.getCluster(cce_order, index);
     
-    //creat for difference subclass
     vector<QuantumOperator> lv_list;
     vector<double> time_segment;
     
-    //change to _amplitude_size().
     for(int i =0; i<_amplitude_list.size(); ++i)
     {
         Hamiltonian hami0 = create_spin_hamiltonian(_center_spin, _state_pair.first, spin_list,_amplitude_list[i],_phase_list[i],_field_axis,_omega);
@@ -52,7 +47,6 @@ vec EXFEnsembleCCE::cluster_evolution(int cce_order, int index)
         time_segment.push_back(_time_list[i+1]-_time_list[i]);
     }
     DensityOperator ds = create_spin_density_state(spin_list);//no polarization
-    //the length of lv_list is n, then the length of _time_list is n-1;this may occurs wrong!attention.
     NEQPiecewiseFullMatrixVectorEvolution kernel(lv_list, time_segment, ds);
     kernel.setTimeSequence( _t0, _t1, _nTime);
 

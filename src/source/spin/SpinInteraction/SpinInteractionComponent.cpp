@@ -541,8 +541,8 @@ RWADipolarInteractionCoeff::RWADipolarInteractionCoeff(const cSpinInteractionDom
         cSPIN spin0=(*it)[0];    cSPIN spin1=(*it)[1];
         vec coeffs = dipole(spin0, spin1);
         vec coeffs1;
-        coeffs1 <<  (coeffs[1]-coeffs[4])/2.0 << (coeffs[1]+coeffs[3])/2.0 << 0.0
-                << -(coeffs[1]-coeffs[4])/2.0 << (coeffs[1]+coeffs[3])/2.0 << 0.0
+        coeffs1 <<  (coeffs[0]-coeffs[4])/2.0 << (coeffs[1]+coeffs[3])/2.0 << 0.0
+                <<  (coeffs[1]+coeffs[3])/2.0 << -(coeffs[0]-coeffs[4])/2.0 << 0.0
                 << 0.0                        << 0.0                       <<coeffs[8];
         _coeff_list.push_back(coeffs1);
     }

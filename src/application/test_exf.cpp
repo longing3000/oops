@@ -15,7 +15,7 @@ void prepare_data(string filename);
 
 int  main(int argc, char* argv[])
 {
-    string filename = "./dat/input/EspinBath_npin2.xyz";
+    string filename = "/home/david/code/oops/src/dat/input/EspinBath_nspin2.xyz";
     prepare_data(filename);
 
     return 0;
@@ -53,14 +53,33 @@ void prepare_data(string filename)
 
 
     vec magB; magB << magBx << magBy << magBz;
-    double amplitude=10000.0;
-    double phase=1.5;double omega=sl[0].get_gamma()*magBz;
+    double amplitude=4.0;
+    double phase=0.0;
+    //double omega=-(sl[0].get_gamma())*magBz;
+    double omega=0.0;
     vec field_axis;field_axis << 1.0 << 0.0 << 0.0;
     RWASpinZeemanInteraction zee(sl, magB,omega);
     RWASpinDipolarInteraction dip(sl);
     RWADipolarField hf_field0(sl, espin, st0);
     RWADipolarField hf_field1(sl, espin, st1);
     ExternalField ex_field(sl,amplitude,phase,field_axis); 
+
+    Hamiltonian zeeH(sl);
+    zeeH.addInteraction(zee);
+    zeeH.make();
+    zeeH.saveMatrix("zeeH");
+    Hamiltonian dipH(sl);
+    dipH.addInteraction(dip);
+    dipH.make();
+    dipH.saveMatrix("dipH");
+    Hamiltonian exH(sl);
+    exH.addInteraction(ex_field);
+    exH.make();
+    exH.saveMatrix("exH");
+    Hamiltonian hf_fieldH(sl);
+    hf_fieldH.addInteraction(hf_field0);
+    hf_fieldH.make();
+    hf_fieldH.saveMatrix("hf_field0");
 
     Hamiltonian hami0(sl);
     hami0.addInteraction(zee);
@@ -87,15 +106,15 @@ void prepare_data(string filename)
     Liouvillian lvH = lv0 - lv1;
 
 
-//    double rate =0.0*2.0*datum::pi*1e4;//dephasing rate
-//    vec axis; axis << 1.0 << 1.0 << 1.0;
-//    SpinDephasing dephasing(sl, rate, normalise(axis));//set dephaing for each spins
-//    LiouvilleSpaceOperator dephaseOperator(sl);
-//    dephaseOperator.addInteraction(dephasing);
-//    dephaseOperator.make();//generate dephasing Liouvillian
-//
-//    QuantumOperator lv = lvH + dephaseOperator;
-    QuantumOperator lv = lvH;
+    double rate =0.0*2.0*datum::pi*1e4;//dephasing rate
+    vec axis; axis << 1.0 << 1.0 << 1.0;
+    SpinDephasing dephasing(sl, rate, normalise(axis));//set dephaing for each spins
+    LiouvilleSpaceOperator dephaseOperator(sl);
+    dephaseOperator.addInteraction(dephasing);
+    dephaseOperator.make();//generate dephasing Liouvillian
+
+    QuantumOperator lv = lvH + dephaseOperator;
+    //QuantumOperator lv = lvH;
     lv.saveMatrix("lv");
 
 
