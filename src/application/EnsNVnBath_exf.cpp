@@ -12,6 +12,7 @@ cDepthFirstPathTracing create_spin_cluster_algrithm(const po::variables_map& par
 
 int  main(int argc, char* argv[])
 {
+    long start=clock();
     po::variables_map para = ParseCommandLineOptions(argc, argv);
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -58,7 +59,7 @@ int  main(int argc, char* argv[])
     sol.post_treatment();
 
     LOG(INFO) << "my_rank = " << my_rank << "  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Program ends ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"; 
-
+    long end=clock();
     ////////////////////////////////////////////////////////////////////////////////
     //{{{ MPI Finializing
     mpi_status = MPI_Finalize();
@@ -114,7 +115,7 @@ po::variables_map ParseCommandLineOptions(int argc, char* argv[])
         ("help,h", "Print help message")
         ("initialize,I", "Initialize a dat folder")
 
-        ("input,i",          po::value<string>()->default_value("C13Bath/Roycoord5.xyz"), "Input file name")
+        ("input,i",          po::value<string>()->default_value("C13Bath/RoyCoord.xyz"), "Input file name")
         ("output,o",         po::value<string>()->default_value(output_filename),        "Output .mat file of results")
         ("logfile,l",        po::value<string>()->default_value("EnsembleCCE.conf"),     "Config. file of logging")
         
@@ -123,7 +124,7 @@ po::variables_map ParseCommandLineOptions(int argc, char* argv[])
         ("state1,b",         po::value<int>()->default_value(1),                         "Central spin state index - b")
 
         ("cce,c",            po::value<int>()->default_value(3),                         "CCE order")
-        ("cutoff,d",         po::value<double>()->default_value(100.0),                    "Cut-off distance of bath spins")
+        ("cutoff,d",         po::value<double>()->default_value(6.0),                    "Cut-off distance of bath spins")
         ("polarization,z",   po::value<string>()->default_value("0.0 0.0 0.0"),          "bath spin polarization (not used)")
         ("dephasing_rate,r", po::value<double>()->default_value(0.0),                    "dephasing rate of bath spins")
         ("dephasing_axis,x", po::value<string>()->default_value("1.0 1.0 1.0"),          "dephasing axis of bath spins")
@@ -133,14 +134,14 @@ po::variables_map ParseCommandLineOptions(int argc, char* argv[])
         ("isotope",          po::value<string>()->default_value("E"),                    "bath spin isotope (not used)")
 
         ("input_data,i",     po::value<string>()->default_value("external_field.xyz"),    "Input external field file name")
-        ("omega,o",          po::value<double>()->default_value(0.0),                      "external field frequency")
+        ("omega,o",          po::value<double>()->default_value(-672.8284),                      "external field frequency")
         ("field axis",       po::value<string>()->default_value("1.0 0.0 0.0"),          "external field axis")
 
 
         ("nTime,n",          po::value<int>()->default_value(101),                       "Number of time points(not used)")
         ("start,s",          po::value<double>()->default_value(0.0),                    "Start time (in unit of sec.)")
-        ("finish,f",         po::value<double>()->default_value(0.00005),                  "Finish time (in unit of sec.)")
-        ("magnetic_field,B", po::value<string>()->default_value("0.0 0.0 0.2"),          "magnetic field vector in Tesla")
+        ("finish,f",         po::value<double>()->default_value(0.002),                  "Finish time (in unit of sec.)")
+        ("magnetic_field,B", po::value<string>()->default_value("0.1 0.1 0.1"),          "magnetic field vector in Tesla")
         ("pulse,p",          po::value<string>()->default_value("CPMG"),                 "Pulse name(not used)")
         ("pulse_num,m",      po::value<int>()->default_value(0),                         "Pulse number(not used)")
         ;

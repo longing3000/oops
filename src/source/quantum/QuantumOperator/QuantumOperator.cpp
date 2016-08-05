@@ -6,7 +6,6 @@
 void QuantumOperator::saveMatrix(string name)
 {
     cx_mat m= this->getMatrix();
-    cout << "not bad" << endl;
     mat m_r = real(m).t();
     mat m_i = imag(m).t();
     

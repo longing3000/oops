@@ -508,8 +508,8 @@ ExternalFieldInteractionCoeff::ExternalFieldInteractionCoeff(const cSpinInteract
     {
         cSPIN spin0=(*it)[0];
         vec coeffs;
-        coeffs << amplitude*(axis[0]*(cos(phase)-sin(phase))+axis[1]*(cos(phase)+sin(phase)))/2.0 
-               << amplitude*(axis[1]*(cos(phase)-sin(phase))-axis[0]*(cos(phase)+sin(phase)))/2.0 
+        coeffs << amplitude*(axis[0]*cos(phase)-axis[1]*sin(phase))
+               << amplitude*(axis[1]*cos(phase)+axis[0]*sin(phase)) 
                << 0.0 << 0.0 << 0.0 << 0.0;
         _coeff_list.push_back(coeffs);
     }
@@ -541,8 +541,8 @@ RWADipolarInteractionCoeff::RWADipolarInteractionCoeff(const cSpinInteractionDom
         cSPIN spin0=(*it)[0];    cSPIN spin1=(*it)[1];
         vec coeffs = dipole(spin0, spin1);
         vec coeffs1;
-        coeffs1 <<  (coeffs[0]-coeffs[4])/2.0 << (coeffs[1]+coeffs[3])/2.0 << 0.0
-                <<  (coeffs[1]+coeffs[3])/2.0 << -(coeffs[0]-coeffs[4])/2.0 << 0.0
+        coeffs1 <<  (coeffs[0]+coeffs[4])/2.0 << (coeffs[1]-coeffs[3])/2.0 << 0.0
+                << -(coeffs[1]-coeffs[3])/2.0 << (coeffs[0]+coeffs[4])/2.0 << 0.0
                 << 0.0                        << 0.0                       <<coeffs[8];
         _coeff_list.push_back(coeffs1);
     }
@@ -612,7 +612,7 @@ RWADipolarFieldInteractionCoeff::RWADipolarFieldInteractionCoeff(const cSpinInte
         for(int i=0; i<spin_list.size(); ++i)
             dip_field += dipole_field(spin0, spin_list[i], state_list[i].getVector() );
         
-        vec coeffs; coeffs << 0.0 << 0.0 << dip_field[2] << 0.0 << 0.0 << 0.0;
+        vec coeffs; coeffs << 0.0 << 0.0 << dip_field[2]<< 0.0 << 0.0 << 0.0;
         _coeff_list.push_back(coeffs);
     }
 }

@@ -8,7 +8,7 @@ ROOT_DIR  :=  $(shell pwd)
 BINPATH := ../bin
 OBJPATH := ../obj
 
-APP := EnsNVeBath EnsNVnBath EnsNVLattice SingleSampleCCE_NV_C13 MatExpTest test test_exf EnsNVnBath_exf EnsNVnBath_test
+APP := EnsNVeBath EnsNVnBath EnsNVLattice SingleSampleCCE_NV_C13 MatExpTest test test_exf EnsNVnBath_exf calculate_hyperfine
 
 DESTINATION := $(addprefix $(BINPATH)/, $(APP))
 LIBPATH := .  

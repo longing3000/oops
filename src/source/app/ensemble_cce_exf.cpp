@@ -20,6 +20,7 @@ void EXFEnsembleCCE::set_parameters()
 
     _t0                    = _para["start"].as<double>(); 
     _t1                    = _para["finish"].as<double>();
+    _nTime                 = _para["nTime"].as<int>();
 
     _field_axis            = vec( _para["field axis"].as<string>() );//two confusion, the vector?, as<double>?
     _omega                 =_para["omega"].as<double>();
@@ -28,17 +29,38 @@ void EXFEnsembleCCE::set_parameters()
     _bath_spin_filename = INPUT_PATH + input_filename;
     _result_filename    = OUTPUT_PATH + output_filename + ".mat";
     _external_field_filename = INPUT_PATH + input_field_filename;
+    set_external_field(_external_field_filename);
+    _time_list=linspace<vec>(_t0,_t1,_nTime);
 }/*}}}*/
 
 vec EXFEnsembleCCE::cluster_evolution(int cce_order, int index)
 {/*{{{*/
     vector<cSPIN> spin_list = _my_clusters.getCluster(cce_order, index);
     
+    //test theory
+    //ofstream index_file;
+    //index_file.open("/home/david/code/test/index_file.txt");
+    //if(cce_order==0)
+    //{
+    //    cx_vec state=_state_pair.second.getVector();
+    //    vec coeff=dipole_field(spin_list[0],_center_spin,state);
+    //    if(abs(coeff[2])>(0.1*_amplitude_list[0]))
+    //    {
+    //        cout << coeff[2] << "...." << _amplitude_list[0] << endl;
+    //        cout << index << endl;
+    //        //index_file << index << endl;
+    //    }
+    //}
+    //index_file.close();
+        
+
     vector<QuantumOperator> lv_list;
     vector<double> time_segment;
     
     for(int i =0; i<_amplitude_list.size(); ++i)
     {
+        //_amplitude_list[i]=1.0*(rand()%1000000);_phase_list[i]=(rand()%100)*0.0628;
+        //cout << _amplitude_list[i] << endl;
         Hamiltonian hami0 = create_spin_hamiltonian(_center_spin, _state_pair.first, spin_list,_amplitude_list[i],_phase_list[i],_field_axis,_omega);
         Hamiltonian hami1 = create_spin_hamiltonian(_center_spin, _state_pair.second, spin_list,_amplitude_list[i],_phase_list[i],_field_axis,_omega);
         LiouvilleSpaceOperator dephase = create_incoherent_operator(spin_list);
@@ -52,20 +74,21 @@ vec EXFEnsembleCCE::cluster_evolution(int cce_order, int index)
 
     ClusterCoherenceEvolution dynamics(&kernel);
     dynamics.run();
-
+    
     return calc_observables(&kernel);
 }/*}}}*/
 
 Hamiltonian EXFEnsembleCCE::create_spin_hamiltonian(const cSPIN& espin, const PureState& center_spin_state, const vector<cSPIN>& spin_list, const double& amplitude, const double& phase, const vec& axis, const double& omega)
 {/*{{{*/
-    RWASpinDipolarInteraction dip(spin_list);
 
-    RWASpinZeemanInteraction zee(spin_list, _magB,_omega);
+    RWASpinZeemanInteraction zee(spin_list,_magB,omega);
+
+    RWASpinDipolarInteraction dip(spin_list);
 
     RWADipolarField hf_field(spin_list, espin, center_spin_state);
     
     ExternalField ex_field(spin_list, amplitude, phase,axis);
-
+    
     Hamiltonian hami(spin_list);
     hami.addInteraction(dip);
     hami.addInteraction(zee);
@@ -104,7 +127,7 @@ DensityOperator EXFEnsembleCCE::create_spin_density_state(const vector<cSPIN>& s
     ds.make();
     ds.makeVector();
     return ds;
-}/*}}}*/
+}/*}}}*/ 
 
 vec EXFEnsembleCCE::calc_observables(QuantumEvolutionAlgorithm* kernel)
 {/*{{{*/

@@ -7,12 +7,7 @@ namespace po = boost::program_options;
 class EXFEnsembleCCE:public CCE
 {
 public:
-    EXFEnsembleCCE(int my_rank, int worker_num, const po::variables_map& para):CCE(my_rank, worker_num, para) 
-    { 
-        set_parameters();
-        set_external_field(_external_field_filename);
-        _time_list=linspace<vec>(_t0,_t1,_nTime);
-    }
+    EXFEnsembleCCE(int my_rank, int worker_num, const po::variables_map& para):CCE(my_rank, worker_num, para) { set_parameters();}
 
     void set_parameters();
     vec cluster_evolution(int cce_order, int index);

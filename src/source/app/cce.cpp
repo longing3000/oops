@@ -62,7 +62,7 @@ void CCE::set_external_field(string& external_filed_filename)
         if(!external_field) assert(0);
     }
     
-    while(!external_field.eof())
+    for(int i=0; i<_nTime-1; ++i)
     {
         double res1,res2;
         external_field  >>  res1 >> res2;
@@ -70,7 +70,6 @@ void CCE::set_external_field(string& external_filed_filename)
         _phase_list.push_back(res2);
     }
     external_field.close();
-    _nTime=_amplitude_list.size()+1;
 }/*}}}*/
 
 void CCE::run_each_clusters()
