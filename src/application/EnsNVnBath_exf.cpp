@@ -12,12 +12,11 @@ cDepthFirstPathTracing create_spin_cluster_algrithm(const po::variables_map& par
 
 int  main(int argc, char* argv[])
 {
-    long start=clock();
     po::variables_map para = ParseCommandLineOptions(argc, argv);
 
     ////////////////////////////////////////////////////////////////////////////////
     //{{{  MPI Preparation
-    int worker_num(2), my_rank(2);
+    int worker_num(0), my_rank(0);
     int mpi_status = MPI_Init(&argc, &argv);
     assert (mpi_status == MPI_SUCCESS);
 
@@ -59,7 +58,6 @@ int  main(int argc, char* argv[])
     sol.post_treatment();
 
     LOG(INFO) << "my_rank = " << my_rank << "  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Program ends ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"; 
-    long end=clock();
     ////////////////////////////////////////////////////////////////////////////////
     //{{{ MPI Finializing
     mpi_status = MPI_Finalize();

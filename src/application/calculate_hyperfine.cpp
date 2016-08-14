@@ -6,9 +6,12 @@
 
 int  main()
 {
-    string save_file="/home/david/code/test/hyperfine_coeff.dat";
-    ofstream foutput(save_file.c_str());
+    string hype_file="/home/david/code/test/hyperfine_coeff.dat";
+    string dip_file="/home/david/code/test/dip_coeff.dat";
+    ofstream foutput1(dip_file.c_str());
+    ofstream foutput(hype_file.c_str());
     if(!foutput) assert(0);
+    if(!foutput1) assert(0);
 
     //set nv
     vec nv_coord;nv_coord << 0.0 << 0.0 << 0.0;
@@ -41,5 +44,17 @@ int  main()
    }
     
     foutput.close();
+
+    //get coeff of dipolar
+    for(int i=0; i<spin_list.size(); ++i)
+        for(int j=i+1; j<spin_list.size(); ++j)
+        {
+            vec dip_coeff=dipole(spin_list[i],spin_list[j]);
+            dip_coeff *= 100000.0;
+            foutput1 << dip_coeff[0] << "   " << dip_coeff[1] << "  " << dip_coeff[2] << "  "
+                     << dip_coeff[3] << "   " << dip_coeff[4] << "  " << dip_coeff[5] << "  "
+                     << dip_coeff[6] << "   " << dip_coeff[7] << "  " << dip_coeff[8] << endl;
+        }
+    foutput1.close();
 }
 

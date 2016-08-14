@@ -544,6 +544,7 @@ RWADipolarInteractionCoeff::RWADipolarInteractionCoeff(const cSpinInteractionDom
         coeffs1 <<  (coeffs[0]+coeffs[4])/2.0 << (coeffs[1]-coeffs[3])/2.0 << 0.0
                 << -(coeffs[1]-coeffs[3])/2.0 << (coeffs[0]+coeffs[4])/2.0 << 0.0
                 << 0.0                        << 0.0                       <<coeffs[8];
+        //coeffs1  *= 100000.0;
         _coeff_list.push_back(coeffs1);
     }
 }
