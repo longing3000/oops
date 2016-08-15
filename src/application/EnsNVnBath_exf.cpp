@@ -1,5 +1,5 @@
 #include "include/app/app.h"
-#include "include/app/ensemble_cce_exf.h"
+#include "include/app/ensemble_cce.h"
 
 _INITIALIZE_EASYLOGGINGPP
 
@@ -36,7 +36,7 @@ int  main(int argc, char* argv[])
     
     LOG(INFO) << "my_rank = " << my_rank << "  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv Program begins vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"; 
 
-    EXFEnsembleCCE sol(my_rank, worker_num, para);
+    EnsembleCCE sol(my_rank, worker_num, para);
 
     // Step 1: make a defect center
     NVCenter nv = create_defect_center(para);  
@@ -58,6 +58,7 @@ int  main(int argc, char* argv[])
     sol.post_treatment();
 
     LOG(INFO) << "my_rank = " << my_rank << "  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Program ends ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"; 
+
     ////////////////////////////////////////////////////////////////////////////////
     //{{{ MPI Finializing
     mpi_status = MPI_Finalize();
@@ -70,7 +71,7 @@ po::variables_map ParseCommandLineOptions(int argc, char* argv[])
 {/*{{{*/
     ////////////////////////////////////////////////////////////////////////////////
     //{{{ record command line options
-    string output_filename("EnsNVnBath_exf");
+    string output_filename("EnsNVnBath");
     string command_opt("");
     for(int i=1; i<argc; ++i)
         command_opt += argv[i];
@@ -108,7 +109,6 @@ po::variables_map ParseCommandLineOptions(int argc, char* argv[])
     //{{{ Parse options
     po::variables_map para;
     po::options_description desc("Allowed options");
-    //if exsit config file, read it; if not, creat it by default value.
     desc.add_options()
         ("help,h", "Print help message")
         ("initialize,I", "Initialize a dat folder")
@@ -131,17 +131,12 @@ po::variables_map ParseCommandLineOptions(int argc, char* argv[])
         ("seed,D",           po::value<int>()->default_value(1),                         "bath seed (not used)")
         ("isotope",          po::value<string>()->default_value("E"),                    "bath spin isotope (not used)")
 
-        ("input_data,i",     po::value<string>()->default_value("external_field.xyz"),    "Input external field file name")
-        ("omega,o",          po::value<double>()->default_value(-672.8284),                      "external field frequency")
-        ("field axis",       po::value<string>()->default_value("1.0 0.0 0.0"),          "external field axis")
-
-
-        ("nTime,n",          po::value<int>()->default_value(101),                       "Number of time points(not used)")
+        ("nTime,n",          po::value<int>()->default_value(101),                       "Number of time points")
         ("start,s",          po::value<double>()->default_value(0.0),                    "Start time (in unit of sec.)")
         ("finish,f",         po::value<double>()->default_value(0.002),                  "Finish time (in unit of sec.)")
         ("magnetic_field,B", po::value<string>()->default_value("0.1 0.1 0.1"),          "magnetic field vector in Tesla")
-        ("pulse,p",          po::value<string>()->default_value("CPMG"),                 "Pulse name(not used)")
-        ("pulse_num,m",      po::value<int>()->default_value(0),                         "Pulse number(not used)")
+        ("pulse,p",          po::value<string>()->default_value("CPMG"),                 "Pulse name")
+        ("pulse_num,m",      po::value<int>()->default_value(1),                         "Pulse number")
         ;
 
     po::store(parse_command_line(argc, argv, desc), para);
@@ -158,8 +153,7 @@ po::variables_map ParseCommandLineOptions(int argc, char* argv[])
         cout << desc;
         exit(0);
     }
-    if (para.count("initialize")) 
-    {
+    if (para.count("initialize")) {
         string path = getenv("OOPS_PATH");
         string cmd = "cp -r " + path + "/src/dat_example dat" ;
         cout << cmd << endl;
