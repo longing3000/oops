@@ -36,7 +36,7 @@ int  main(int argc, char* argv[])
     
     LOG(INFO) << "my_rank = " << my_rank << "  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv Program begins vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"; 
 
-    EXFEnsembleCCE sol(my_rank, worker_num, para);
+    SCIEnsembleCCE sol(my_rank, worker_num, para);
 
     // Step 1: make a defect center
     NVCenter nv = create_defect_center(para);  
