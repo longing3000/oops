@@ -13,6 +13,7 @@ public:
     cSPIN get_espin() const {return _electron_spin;}
     cSPIN get_nspin() const {return _nuclear_spin;}
     cx_vec get_eigen_state(int i) const {return _eigen_vectors.col(i);}
+    cx_double get_eigen_value(int i) const {return _eigen_vals(i);};
 
     virtual void make_espin_hamiltonian()=0;
 

@@ -6,13 +6,6 @@
 
 int  main()
 {
-    string hype_file="/home/david/code/test/hyperfine_coeff.dat";
-    string dip_file="/home/david/code/test/dip_coeff.dat";
-    ofstream foutput1(dip_file.c_str());
-    ofstream foutput(hype_file.c_str());
-    if(!foutput) assert(0);
-    if(!foutput1) assert(0);
-
     //set nv
     vec nv_coord;nv_coord << 0.0 << 0.0 << 0.0;
     vec magB;magB << 0.1 << 0.1 << 0.1;
@@ -24,8 +17,10 @@ int  main()
     int state_idx1=1;
     cx_vec state0=nv.get_eigen_state(state_idx0);
     cx_vec state1=nv.get_eigen_state(state_idx1);
-
-    foutput << state_idx0 << "  " << state_idx1 << endl;
+    
+    cout << "state 0:" << nv.get_eigen_value(0) << endl;
+    cout << "state 1:" << nv.get_eigen_value(1) << endl;
+    cout << "state 2:" << nv.get_eigen_value(2) << endl;
 
     //set bath spins
     string filename="/home/david/code/test/dat/input/C13Bath/RoyCoord.xyz";
@@ -34,12 +29,62 @@ int  main()
     bath_spins.make();
     vector<cSPIN> spin_list=bath_spins.getSpinList();
 
+    //{{{check dephasing Hamiltonian and evolution
+    vector<cSPIN> spin2;
+    spin2.push_back(spin_list[0]);spin2.push_back(spin_list[1]);
+    SpinDipolarInteraction dip(spin2);
+    SpinZeemanInteraction zee(spin2,magB);
+    DipolarField hf_field0(spin2,nv_espin,state0);
+    DipolarField hf_field1(spin2,nv_espin,state1);
+
+    Hamiltonian hami0(spin2);
+    hami0.addInteraction(dip);
+    hami0.addInteraction(zee);
+    hami0.addInteraction(hf_field0);
+    hami0.make();
+    Hamiltonian hami1(spin2);
+    hami1.addInteraction(dip);
+    hami1.addInteraction(zee);
+    hami1.addInteraction(hf_field1);
+    hami1.make();
+    double rate=1.0*2.0*datum::pi*1e4;
+    vec dephase_axis;dephase_axis << 0.0 << 0.0 << 1.0;
+    SpinDephasing dephasing(spin2,rate,dephase_axis);
+    LiouvilleSpaceOperator dephaseOperator(spin2);
+    dephaseOperator.addInteraction(dephasing);
+    dephaseOperator.make();
+    Liouvillian lv0(hami0,SHARP);
+    Liouvillian lv1(hami1,FLAT);
+    Liouvillian lv=lv0-lv1+dephaseOperator;
+    lv.saveMatrix("lv");
+
+    vec bath_polarization=zeros<vec>(3);
+    SpinPolarization p(spin2,bath_polarization);
+    DensityOperator ds(spin2);
+    ds.addStateComponent(p);
+    ds.make();
+    ds.makeVector();
+    ds.saveVector("state_vec");
+
+    //}}}
+    
+    //{{{hy perfine,dip
+    string hype_file="/home/david/code/test/hyperfine_coeff.dat";
+    string dip_file="/home/david/code/test/dip_coeff.dat";
+    ofstream foutput1(dip_file.c_str());
+    ofstream foutput(hype_file.c_str());
+    if(!foutput) assert(0);
+    if(!foutput1) assert(0);
+    
+
+    foutput << state_idx0 << "  " << state_idx1 << endl;
+
     //get coeff of hyperfine
     for(int i=0; i<spin_list.size(); ++i)
     {
         vec dip_field1=dipole_field(spin_list[i],nv_espin,state0);
         vec dip_field2=dipole_field(spin_list[i],nv_espin,state1);
-        cout << dip_field1[2] << "...." << dip_field2[2] << endl; 
+        cout << dip_field1[2] << "...." <<  dip_field2[2] << endl; 
         foutput << dip_field1[2] << "  " << dip_field2[2] << endl;
    }
     
@@ -56,5 +101,6 @@ int  main()
                      << dip_coeff[6] << "   " << dip_coeff[7] << "  " << dip_coeff[8] << endl;
         }
     foutput1.close();
+    //}}}
 }
 
