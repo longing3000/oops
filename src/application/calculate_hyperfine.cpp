@@ -19,8 +19,11 @@ int  main()
     cx_vec state1=nv.get_eigen_state(state_idx1);
     
     cout << "state 0:" << nv.get_eigen_value(0) << endl;
+    cout << state0 << endl;
     cout << "state 1:" << nv.get_eigen_value(1) << endl;
+    cout << state1 << endl;
     cout << "state 2:" << nv.get_eigen_value(2) << endl;
+    cout << nv.get_eigen_state(2) << endl;
 
     //set bath spins
     string filename="/home/david/code/test/dat/input/C13Bath/RoyCoord.xyz";
@@ -29,6 +32,7 @@ int  main()
     bath_spins.make();
     vector<cSPIN> spin_list=bath_spins.getSpinList();
 
+
     //{{{check dephasing Hamiltonian and evolution
     vector<cSPIN> spin2;
     spin2.push_back(spin_list[0]);spin2.push_back(spin_list[1]);
@@ -36,6 +40,15 @@ int  main()
     SpinZeemanInteraction zee(spin2,magB);
     DipolarField hf_field0(spin2,nv_espin,state0);
     DipolarField hf_field1(spin2,nv_espin,state1);
+    
+    //check Liouvillian
+    Hamiltonian dip_H(spin2);
+    dip_H.addInteraction(dip);
+    dip_H.make();
+    Liouvillian dip_H_sharp(dip_H,SHARP);
+    Liouvillian dip_H_flat(dip_H,FLAT);
+    dip_H_sharp.saveMatrix("sharp");
+    dip_H_flat.saveMatrix("flat");
 
     Hamiltonian hami0(spin2);
     hami0.addInteraction(dip);
@@ -55,8 +68,13 @@ int  main()
     dephaseOperator.make();
     Liouvillian lv0(hami0,SHARP);
     Liouvillian lv1(hami1,FLAT);
-    Liouvillian lv=lv0-lv1+dephaseOperator;
+    Liouvillian lv_d=lv0-lv1+dephaseOperator;
+    Liouvillian lv=lv0-lv1;
     lv.saveMatrix("lv");
+    hami0.saveMatrix("hami0");
+    hami1.saveMatrix("hami1");
+    lv_d.saveMatrix("lv_d");
+    dephaseOperator.saveMatrix("dephase");
 
     vec bath_polarization=zeros<vec>(3);
     SpinPolarization p(spin2,bath_polarization);
@@ -102,5 +120,5 @@ int  main()
         }
     foutput1.close();
     //}}}
-}
 
+}

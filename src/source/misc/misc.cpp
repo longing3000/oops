@@ -27,7 +27,7 @@ vec dipole(const cSPIN& spin1, const cSPIN& spin2)
     double g1=spin1.get_gamma();
     double g2=spin2.get_gamma();
     double prefactor = datum::h_bar * (datum::mu_0)/(4.0 * datum::pi) * (g1*g2)/(d0*d0*d0);
-
+    
     vec res;
     res << 1.0-3.0*nx*nx <<     -3.0*nx*ny <<     -3.0*nx*nz
         <<    -3.0*ny*nx <<  1.0-3.0*ny*ny <<     -3.0*ny*nz
