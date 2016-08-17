@@ -7,7 +7,7 @@ void QuantumOperator::saveMatrix(string name)
 {
     cx_mat m= this->getMatrix();
     mat m_r = real(m).t();
-    mat m_i = imag(m).t();
+    mat m_i =-imag(m).t();
     
     mxArray *pArray = mxCreateDoubleMatrix(_dimension,_dimension,mxCOMPLEX);
 
