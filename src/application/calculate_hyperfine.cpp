@@ -41,14 +41,14 @@ int  main()
     DipolarField hf_field0(spin2,nv_espin,state0);
     DipolarField hf_field1(spin2,nv_espin,state1);
     
-    //check Liouvillian
-    Hamiltonian dip_H(spin2);
-    dip_H.addInteraction(dip);
-    dip_H.make();
-    Liouvillian dip_H_sharp(dip_H,SHARP);
-    Liouvillian dip_H_flat(dip_H,FLAT);
-    dip_H_sharp.saveMatrix("sharp");
-    dip_H_flat.saveMatrix("flat");
+    ////check Liouvillian
+    //Hamiltonian dip_H(spin2);
+    //dip_H.addInteraction(dip);
+    //dip_H.make();
+    //Liouvillian dip_H_sharp(dip_H,SHARP);
+    //Liouvillian dip_H_flat(dip_H,FLAT);
+    //dip_H_sharp.saveMatrix("sharp");
+    //dip_H_flat.saveMatrix("flat");
 
     Hamiltonian hami0(spin2);
     hami0.addInteraction(dip);
@@ -69,12 +69,11 @@ int  main()
     Liouvillian lv0(hami0,SHARP);
     Liouvillian lv1(hami1,FLAT);
     Liouvillian lv_d=lv0-lv1+dephaseOperator;
-    Liouvillian lv=lv0-lv1;
-    lv.saveMatrix("lv");
-    hami0.saveMatrix("hami0");
-    hami1.saveMatrix("hami1");
+    //Liouvillian lv=lv0-lv1;
+    //lv.saveMatrix("lv");
+    //hami0.saveMatrix("hami0");
+    //hami1.saveMatrix("hami1");
     lv_d.saveMatrix("lv_d");
-    dephaseOperator.saveMatrix("dephase");
 
     vec bath_polarization=zeros<vec>(3);
     SpinPolarization p(spin2,bath_polarization);

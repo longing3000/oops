@@ -46,8 +46,8 @@ int  main(int argc, char* argv[])
     // Step 2: make bath spins 
     cSpinSourceFromLattice spin_from_latt = create_spin_source(para);
     sol.set_bath_spin(&spin_from_latt);
-    
-    
+    spin_from_latt.export_coordinates(OUTPUT_PATH+"coord.xyz");
+
     // Step 3: make clusters
     cSpinCollection bath_spins = sol.getSpinCollecion();
     cUniformBathOnLattice bath_on_lattice = create_spin_cluster_algrithm(para, bath_spins);
@@ -111,13 +111,13 @@ po::variables_map ParseCommandLineOptions(int argc, char* argv[])
 
 
     ////////////////////////////////////////////////////////////////////////////////
-    //{{{ Parse command line options
+    //{{{ Pars e command line options
     po::variables_map para;
     po::options_description desc("Allowed options");
     desc.add_options()
         ("help,h", "Print help message")
         ("initialize,I", "Initialize a dat folder")
-
+ 
         ("input,i",          po::value<string>()->default_value("None"),                 "Input file name (not used)")
         ("output,o",         po::value<string>()->default_value(output_filename),        "Output .mat file of results")
         ("logfile,l",        po::value<string>()->default_value("EnsembleCCE.conf"),     "Config. file of logging")
