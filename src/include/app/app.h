@@ -12,4 +12,7 @@ string DEBUG_PATH;
 
 cSPINDATA SPIN_DATABASE=cSPINDATA();
 
+clock_t global_start,global_end;
+int global_bug_node;
+
 #endif

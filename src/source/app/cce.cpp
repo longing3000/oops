@@ -251,6 +251,7 @@ void CCE::export_mat_file()
     mxDestroyArray(pRes1);
     mxDestroyArray(pTime);
     matClose(mFile);
+    cout << "data export success!!!" << endl;
 #endif
 }/*}}}*/
 //}}}

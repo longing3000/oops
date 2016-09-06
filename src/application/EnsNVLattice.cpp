@@ -10,9 +10,16 @@ void set_parameters(const string& xml_file_name);
 NVCenter create_defect_center(const po::variables_map& para);
 cSpinSourceFromLattice create_spin_source(const po::variables_map& para);
 cUniformBathOnLattice create_spin_cluster_algrithm(const po::variables_map& para, const cSpinCollection& bath_spins);
+//void output_cluster(const po::variables_map& para, const cSpinCluster& spin_clusters);
 
 int  main(int argc, char* argv[])
 {
+    global_bug_node=0;
+    global_start=clock();
+    global_end=clock();
+    time_output << global_bug_node << "    " << double()(global_start-global_end)/CLOCKS_PER_SEC << endl;
+    global_bug_node +=1;
+
     po::variables_map para = ParseCommandLineOptions(argc, argv);
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -46,19 +53,32 @@ int  main(int argc, char* argv[])
     // Step 2: make bath spins 
     cSpinSourceFromLattice spin_from_latt = create_spin_source(para);
     sol.set_bath_spin(&spin_from_latt);
-    spin_from_latt.export_coordinates(OUTPUT_PATH+"coord.xyz");
 
     // Step 3: make clusters
     cSpinCollection bath_spins = sol.getSpinCollecion();
     cUniformBathOnLattice bath_on_lattice = create_spin_cluster_algrithm(para, bath_spins);
     sol.set_bath_cluster(&bath_on_lattice);
+    //cout cluster number.
+    //cSpinCluster spin_clusters=sol.getSpinClusters();
+    //output_cluster(para,spin_clusters);
+    //click log
+    global_end=clock();
+    time_output << global_bug_node << "    " << double()(global_start-global_end)/CLOCKS_PER_SEC << endl;
+    global_bug_node +=1;
+
 
     // Step 4: run_each_cluster 
     sol.run_each_clusters();
 
     // Step 5: post_treatment
     sol.post_treatment();
+    //output_cluster(para,spin_clusters);
+    
 
+    global_end=clock();
+    time_output << global_bug_node << "    " << double()(global_start-global_end)/CLOCKS_PER_SEC << endl;
+    time_output.close();
+    
     LOG(INFO) << "my_rank = " << my_rank << "  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Program ends ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"; 
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -209,8 +229,20 @@ cUniformBathOnLattice create_spin_cluster_algrithm(const po::variables_map& para
 
     TwoDimFaceCenterLattice latt(lattice_const, isotope);
     latt.setRange(range_i);
+
+    //cout coordnate
+    //TwoDimFaceCenterLattice latt_coord(lattice_const,isotope);
+    //latt_coord.setRange(root_range_i);
+    //latt_coord.save_to_file(OUTPUT_PATH+"coord.xyz");
     
     sp_mat c=bath_spins.getConnectionMatrix(cut_off);
     cUniformBathOnLattice bath_on_lattice(c, maxOrder, bath_spins, latt, root_range_i);
     return  bath_on_lattice;
 }/*}}}*/
+
+//void output_cluster(const po::variables_map& para, const cSpinCluster& spin_clusters)
+//{/*{{{*/
+//   int maxOrder = para["cce"].as<int>();
+//   for(int i=0; i<maxOrder; ++i)
+//       cout << "-----------CCE order:" << i << "----------" << "cluster number:" << spin_clusters.getClusterNum(i) << "----------" << endl; 
+//}/*}}}*/
