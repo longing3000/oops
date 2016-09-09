@@ -1,5 +1,6 @@
 #include "include/app/app.h"
 #include "include/app/ensemble_cce.h"
+#include "include/my_debug.h"
 
 _INITIALIZE_EASYLOGGINGPP
 
@@ -10,15 +11,12 @@ void set_parameters(const string& xml_file_name);
 NVCenter create_defect_center(const po::variables_map& para);
 cSpinSourceFromLattice create_spin_source(const po::variables_map& para);
 cUniformBathOnLattice create_spin_cluster_algrithm(const po::variables_map& para, const cSpinCollection& bath_spins);
-//void output_cluster(const po::variables_map& para, const cSpinCluster& spin_clusters);
+void output_cluster(const po::variables_map& para, const cSpinCluster& spin_clusters);
 
 int  main(int argc, char* argv[])
 {
-    global_bug_node=0;
-    global_start=clock();
-    global_end=clock();
-    time_output << global_bug_node << "    " << double()(global_start-global_end)/CLOCKS_PER_SEC << endl;
-    global_bug_node +=1;
+    global_log_file.open((OUTPUT_PATH+"dat/output/log_file.txt").c_str(),std::ios_base::app);
+    global_log_file << "program begins" << endl;
 
     po::variables_map para = ParseCommandLineOptions(argc, argv);
 
@@ -43,13 +41,14 @@ int  main(int argc, char* argv[])
     ////////////////////////////////////////////////////////////////////////////////
 
     LOG(INFO) << "my_rank = " << my_rank << "  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv Program begins vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"; 
-
+    
+    global_start=clock();
     EnsembleCCE sol(my_rank, worker_num, para);
 
     // Step 1: make a defect center
     NVCenter nv = create_defect_center(para);  
     sol.set_defect_center(&nv);
-
+    
     // Step 2: make bath spins 
     cSpinSourceFromLattice spin_from_latt = create_spin_source(para);
     sol.set_bath_spin(&spin_from_latt);
@@ -57,28 +56,26 @@ int  main(int argc, char* argv[])
     // Step 3: make clusters
     cSpinCollection bath_spins = sol.getSpinCollecion();
     cUniformBathOnLattice bath_on_lattice = create_spin_cluster_algrithm(para, bath_spins);
+    global_start=clock();
     sol.set_bath_cluster(&bath_on_lattice);
-    //cout cluster number.
-    //cSpinCluster spin_clusters=sol.getSpinClusters();
-    //output_cluster(para,spin_clusters);
-    //click log
     global_end=clock();
-    time_output << global_bug_node << "    " << double()(global_start-global_end)/CLOCKS_PER_SEC << endl;
-    global_bug_node +=1;
+    global_log_file << "generate all cluster up to order " << para["cce"].as<int>() << ", it consumes:" << (double)(global_end-global_start)/CLOCKS_PER_SEC << "s"  << endl;
+    output_cluster(para,sol.getSpinClusters());
 
-
-    // Step 4: run_each_cluster 
+    // Step 4: run_each_cluster
+    global_start=clock();
     sol.run_each_clusters();
+    global_end=clock();
+    global_log_file << "cluster evolution total time:" <<  (double)(global_end-global_start)/CLOCKS_PER_SEC << "s" << endl;
 
     // Step 5: post_treatment
+    global_start=clock();
     sol.post_treatment();
-    //output_cluster(para,spin_clusters);
-    
-
     global_end=clock();
-    time_output << global_bug_node << "    " << double()(global_start-global_end)/CLOCKS_PER_SEC << endl;
-    time_output.close();
-    
+    global_log_file << "posttreatment total time:" << (double)(global_end-global_start)/CLOCKS_PER_SEC << "s" << endl;
+    global_log_file << "program ends." << endl;
+    global_log_file.close();
+
     LOG(INFO) << "my_rank = " << my_rank << "  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Program ends ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"; 
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -200,7 +197,8 @@ NVCenter create_defect_center(const po::variables_map& para)
     NVCenter nv(NVCenter::N14, coord);
     nv.set_magB(magB);
     nv.make_espin_hamiltonian();
-
+    
+    global_log_file << "generate NV center at (" << coord(0) << "   " << coord(1) << "  " << coord(2) << ") with magnetic field (" << magB(0) << "   " << magB(1) << "   " << magB(2) << ")." << endl;
     return nv;
 }/*}}}*/
 
@@ -234,15 +232,19 @@ cUniformBathOnLattice create_spin_cluster_algrithm(const po::variables_map& para
     //TwoDimFaceCenterLattice latt_coord(lattice_const,isotope);
     //latt_coord.setRange(root_range_i);
     //latt_coord.save_to_file(OUTPUT_PATH+"coord.xyz");
-    
+ 
+    global_log_file << "generate " << (2*root_range_i+1)*(2*root_range_i+1)*2 << " bath spins from lattice." << endl;
+
     sp_mat c=bath_spins.getConnectionMatrix(cut_off);
     cUniformBathOnLattice bath_on_lattice(c, maxOrder, bath_spins, latt, root_range_i);
     return  bath_on_lattice;
 }/*}}}*/
 
-//void output_cluster(const po::variables_map& para, const cSpinCluster& spin_clusters)
-//{/*{{{*/
-//   int maxOrder = para["cce"].as<int>();
-//   for(int i=0; i<maxOrder; ++i)
-//       cout << "-----------CCE order:" << i << "----------" << "cluster number:" << spin_clusters.getClusterNum(i) << "----------" << endl; 
-//}/*}}}*/
+void output_cluster(const po::variables_map& para, const cSpinCluster& spin_clusters)
+{/*{{{*/
+   int maxOrder = para["cce"].as<int>();
+   global_log_file << "up to now";
+   for(int i=0; i<maxOrder; ++i)
+       global_log_file << ",generate " << spin_clusters.getClusterNum(i) << " CCE-" << i << " clusters";
+   global_log_file << endl;
+}/*}}}*/

@@ -4,6 +4,7 @@
 #include "include/spin/SpinCluster.h"
 #include "include/spin/SpinClusterAlgorithm.h"
 
+
 typedef vector<size_t> SubPosLst;
 typedef vector< SubPosLst > SubPosLst_FixOrder;
 ////////////////////////////////////////////////////////////////////////////////

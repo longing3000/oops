@@ -74,19 +74,36 @@ void CCE::set_external_field(string& external_filed_filename)
 
 void CCE::run_each_clusters()
 {
+    clock_t local_start,local_end;
+    std::fstream global_log_file;
+    global_log_file.open((OUTPUT_PATH+"log_file.txt").c_str(),std::ios_base::app);
+
     for(int cce_order = 0; cce_order < _max_order; ++cce_order)
     {
         cout << "my_rank = " << _my_rank << ": " << "calculating order = " << cce_order << endl;
         size_t clst_num = _my_clusters.getClusterNum(cce_order);
         
+        local_start=clock();
+        cout << "my_rank = " << _my_rank << ": " << "calculating order = " << cce_order << endl;
+        mat testMat(_nTime,1,fill::ones);
+        testMat=cluster_evolution(cce_order,0);
+        local_end=clock();
+        global_log_file << "evolution time of one cluster for CCE-" << cce_order << ":" << (double)(local_end-local_start)/CLOCKS_PER_SEC << "s" << endl;
+        
+        local_start=clock();
         mat resMat(_nTime, clst_num, fill::ones);
         for(int i = 0; i < clst_num; ++i)
         {
             cout << "my_rank = " << _my_rank << ": " << i << "/" << clst_num << endl;
             resMat.col(i) = cluster_evolution(cce_order, i);
         }
-        
+        local_end=clock();
+        global_log_file << "evolution time of CCE-" << cce_order << ":" << (double)(local_end-local_start)/CLOCKS_PER_SEC << "s" << endl;
+    
+        local_start=clock();
         DataGathering(resMat, cce_order, clst_num);
+        local_end=clock();
+        global_log_file << "datagathing time of CCE-" << cce_order << ":" << (double)(local_end-local_start)/CLOCKS_PER_SEC << "s" << endl;
     }
 }
 
@@ -94,9 +111,21 @@ void CCE::post_treatment()
 {
     if(_my_rank == 0)
     {
+        clock_t local_start,local_end;
+        std::fstream global_log_file;
+        global_log_file.open((OUTPUT_PATH+"log_file.txt").c_str(),std::ios_base::app);
+
+        local_start = clock();
         cce_coherence_reduction();
+        local_end = clock();
+        global_log_file << "coherence reduction time:" << (double)(local_end-local_start)/CLOCKS_PER_SEC << "s" << endl;
+        
         compuate_final_coherence();
+        
+        local_start=clock();
         export_mat_file();
+        local_end = clock();
+        global_log_file << "export mat file time:" << (double)(local_end-local_start)/CLOCKS_PER_SEC << "s" << endl;
     }
 }
 

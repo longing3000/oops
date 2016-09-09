@@ -1,5 +1,7 @@
 #include "include/spin/SpinClusterFromLattice.h"
 
+extern string OUTPUT_PATH;
+
 double PATTEN_EPS = 1e-10;
 
 cUniformBathOnLattice::cUniformBathOnLattice(const sp_mat& connection_matrix, size_t maxOrder, const cSpinCollection& bath_spins, const Lattice& lattice, int root_range_idx)
@@ -50,7 +52,14 @@ cUniformBathOnLattice::cUniformBathOnLattice(const sp_mat& connection_matrix, si
 
 void cUniformBathOnLattice::generate()
 {
+    clock_t local_start,local_end;
+    std::fstream global_log_file;
+    global_log_file.open((OUTPUT_PATH+"log_file.txt").c_str(),std::ios_base::app);
+    
+    local_start=clock();
     generate_primitive_clusters();
+    local_end=clock();
+    global_log_file << "generate primitive clusster" << ",it consumes:" << (double)(local_end-local_start)/CLOCKS_PER_SEC << "s" << endl;
     generate_sub_primitive_position();
     generate_cluster_index_list();
 
@@ -58,14 +67,22 @@ void cUniformBathOnLattice::generate()
 
 void cUniformBathOnLattice::generate_primitive_clusters()
 {/*{{{*/
+
+    clock_t local_start,local_end;
+    std::fstream global_log_file;
+    global_log_file.open((OUTPUT_PATH+"log_file.txt").c_str(),std::ios_base::app);
+    
     for(int i=0; i<_atom_num_in_cell; ++i)
     {
         cout << "generating primitive clusters of atom " << i << "/" << _atom_num_in_cell << " ..." << endl;
         mat init_mat = zeros<mat>(1, _nspin);
         init_mat(0, _center[i]) = 1;
         
+        local_start=clock();
         _connection_matrix(span(0, _center[i]-1), span::all) = zeros<mat>(_center[i], _nspin);
         _connection_matrix(span::all, span(0, _center[i]-1)) = zeros<mat>(_nspin, _center[i]);
+        local_end=clock();
+        global_log_file << "the time-consuming maximum step of " << i << "th atom num in cell:" << (double)(local_end-local_start)/CLOCKS_PER_SEC << "s" << endl;
         
         cDepthFirstPathTracing dfpt_i(_connection_matrix, _max_order, init_mat);
         cSpinCluster spin_clusters_i(_bath_spins, &dfpt_i);
@@ -94,7 +111,6 @@ void cUniformBathOnLattice::generate_primitive_clusters()
     for(int order=0; order<_max_order; ++order)
         _total_cluster_number.push_back( _unit_cell_num*_primitive_cumsum_size(_atom_num_in_cell, order) );
     cout << "Summary: cluster numbers" << endl << _primitive_cumsum_size << endl;
-
 }/*}}}*/
 
 void cUniformBathOnLattice::generate_sub_primitive_position()
@@ -149,7 +165,7 @@ int cUniformBathOnLattice::locate_primitive_sub_clusters(const urowvec& v)
 }/*}}}*/
 
 void cUniformBathOnLattice::generate_cluster_index_list()
-{
+{/*{{{*/
     _cluster_index_list.clear();
     for(int order=0; order<_max_order; ++order)
     {
@@ -192,5 +208,5 @@ void cUniformBathOnLattice::generate_cluster_index_list()
         _cluster_index_mat.push_back(clst_mat);
         //cout << clst_mat.head_rows(100);
     }
-}
+}/*}}}*/
 

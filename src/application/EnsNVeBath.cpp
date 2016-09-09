@@ -185,7 +185,7 @@ NVCenter create_defect_center(const po::variables_map& para)
     NVCenter nv(NVCenter::N14, coord);
     nv.set_magB(magB);
     nv.make_espin_hamiltonian();
-
+    
     return nv;
 }/*}}}*/
 

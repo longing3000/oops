@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <iostream>
 #include <mpi.h>
+#include <fstream>
 
 #include "include/el/easylogging++.h"
 #include <boost/program_options.hpp>
