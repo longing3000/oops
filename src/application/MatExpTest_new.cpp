@@ -9,90 +9,37 @@ vec    TIME_LIST;
 SumKronProd SKP;
 cx_double PREFACTOR;
 
-void prepare_data(string filename);
+void prepare_data(string filename, int i);
 cx_mat test_arma_mat();
 cx_mat test_pade_mat();
 cx_mat test_large_mat();
 cx_mat test_large_mat_sparse();
 cx_mat test_very_large_mat_CPU();
 cx_mat test_very_large_mat_GPU();
+cx_mat time_cal(cx_mat (*func)(), ofstream& file);
 
 int  main(int argc, char* argv[])
 {
     string filename_expm = "./dat/output/expm.txt";
     ofstream expm_file(filename_expm.c_str());
     if(!expm_file) assert(0);
-    expm_file << "|" << "        | " << "   ArmaExpM   | " << "   PadeExpM   ||||| " << "   VecExpM    | " << "  SpVecExpM   | " << "InexplicitCPU | " << "InexplicitGPU | " << endl;
+    expm_file << "|" << "        | " << "   ArmaExpM   | " << "   PadeExpM   | " << "   VecExpM    | " << "  SpVecExpM   | " << "InexplicitCPU | " << "InexplicitGPU | " << endl;
     
-    int maxSpin=8;
-    string filepath = "./dat/input/RoyCoord.xyz";
-    clock_t start,end;
+    int maxSpin=10;
+    string filename = "./dat/input/C13Bath/RoyCoord.xyz";
     for (int i=3; i<maxSpin; ++i)
     {   
-        stringstream char_i;
-        char_i << i;
-        string filename=filepath + char_i.str();
-        cout << "prepare data for spin-" << char_i.str() << " start"<< endl;
-        prepare_data(filename);
+        cout << "prepare data for spin-" << i << " start"<< endl;
+        prepare_data(filename,i);
         expm_file << "|" << " " << i << " spin | ";
-	int max=10;
-	if(i<5)
-       	    max=100;
-
-	cx_mat res_arma;
-        start = clock();
-	for(int j=0; j<max; ++j)
-	{
-	    res_arma = test_arma_mat();
-        }
-	end = clock();
-        expm_file << std::scientific <<std::setprecision(7) << ((float)(end-start)/CLOCKS_PER_SEC)/max  << " | ";
-
-	cx_mat res_pade;
-        start = clock();
-	for(int j=0; j<max; ++j)
-	{
-	    res_pade = test_pade_mat();
-        }
-	end = clock();
-        expm_file << std::scientific << std::setprecision(7) << ((float)(end-start)/CLOCKS_PER_SEC)/max  << " ||||| ";
-	
-	cx_mat res_large;
-        start = clock();
-	for(int j=0; j<max; ++j)
-	{
-	    res_large = test_large_mat();
-        }
-	end = clock();
-        expm_file << std::scientific << std::setprecision(7) << ((float)(end-start)/CLOCKS_PER_SEC)/max  << " | ";
-
-	cx_mat res_large_sp;
-        start = clock();
-	for(int j=0; j<max; ++j)
-	{
-            res_large_sp = test_large_mat_sparse();
- 	}
-        end = clock();
-        expm_file << std::scientific << std::setprecision(7) << ((float)(end-start)/CLOCKS_PER_SEC)/max  << " | ";
-	
-	cx_mat res_very_large_CPU;
-        start = clock();
-	for(int j=0; j<max; ++j)
-	{
-            res_very_large_CPU = test_very_large_mat_CPU();
- 	}
-        end = clock();
-        expm_file << std::scientific << std::setprecision(7) << ((float)(end-start)/CLOCKS_PER_SEC)/max  << " | ";
-
-	cx_mat res_very_large_GPU;
-        start = clock();
-	for(int j=0; j<max; ++j)
-	{
-            res_very_large_GPU = test_very_large_mat_GPU();
- 	}
-        end = clock();
-        expm_file << std::scientific << std::setprecision(7) << ((float)(end-start)/CLOCKS_PER_SEC)/max  << " | ";
-
+    	
+        cx_mat res_arma = time_cal(&test_arma_mat, expm_file);
+        cx_mat res_pade = time_cal(&test_pade_mat, expm_file);
+        cx_mat res_large = time_cal(&test_large_mat, expm_file);
+        cx_mat res_large_sp = time_cal(&test_large_mat_sparse, expm_file);
+        cx_mat res_very_large_CPU = time_cal(&test_very_large_mat_CPU, expm_file);
+        cx_mat res_very_large_GPU = time_cal(&test_very_large_mat_GPU, expm_file);
+    
         if(i==4)
         {
             cout << "the differences of two kind of ExpM for spin-4 are:" << endl;
@@ -102,23 +49,27 @@ int  main(int argc, char* argv[])
             cout << "diff 2 = " << norm(res_very_large_CPU - res_large) << endl;
             cout << "diff 3 = " << norm(res_very_large_GPU - res_large) << endl;
             cout << "diff 4 = " << norm(res_very_large_GPU - res_very_large_CPU) << endl;
+            cout << "!!!!!pay attention to a little difference in function test_large_mat_sparse!!!!!" << endl;
         }
-
-        cout << "calculate for spin-" << char_i.str()  << " done" << endl;
+    
+        cout << "calculate for spin-" << i  << " done" << endl;
         expm_file << endl;
     }
-    cout << "!!!!!pay attention to a little difference in function test_large_mat_sparse!!!!!" << endl;
     expm_file.close();
     return 0;
 }
 
-void prepare_data(string filename)
+void prepare_data(string filename, int i)
 {/*{{{*/
     cSpinSourceFromFile spin_file(filename);
     cSpinCollection spins(&spin_file);
     spins.make();
-
-    vector<cSPIN> sl = spins.getSpinList();
+    
+    uvec idx(i);
+    for(int j=0; j<i; ++j)
+        idx(j)=j;
+    cClusterIndex clst(idx);
+    vector<cSPIN> sl = spins.getSpinList(clst);
     vec magB;
     magB << 0.1 << 0.1 << 0.1;
 
@@ -191,4 +142,24 @@ cx_mat test_very_large_mat_GPU()
 {/*{{{*/
     MatExpVector expM(SKP, VEC, TIME_LIST, MatExpVector::InexplicitGPU);  
     return expM.run();
+}/*}}}*/
+
+cx_mat time_cal(cx_mat (*func)(), ofstream& file)
+{/*{{{*/
+
+    cx_mat res;
+    clock_t start,end;
+    int max=100;
+    double time=0;
+    for(int j=0; j<max; ++j)
+	{   
+        start = clock();
+        res = func();
+        end = clock();
+        if(((double)(end-start)/CLOCKS_PER_SEC) > 1.0)
+            max=1;
+        time += (double)(end-start)/CLOCKS_PER_SEC;
+    }
+    file << std::scientific <<std::setprecision(7) << time/max  << " | ";
+    return res;
 }/*}}}*/
