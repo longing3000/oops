@@ -166,9 +166,9 @@ cx_mat MatExpVector::runExplicit()
 
     // krylov_zgexpv and krylov_zcooexpv;
     std::complex<double> *w_seq = new std::complex<double> [_nTime * _dim];
-    
-    int err = krylov_zgexpv(_dim, (double _Complex *)mat, (double _Complex *)vecC, _nTime, &_time_list[0], (double _Complex *)w_seq, _klim, _krylov_m, _krylov_tol,  _itrace);
 
+    int err = krylov_zgexpv(_dim, (double _Complex *)mat, (double _Complex *)vecC, _nTime, &_time_list[0], (double _Complex *)w_seq, _klim, _krylov_m, _krylov_tol,  _itrace);
+    
     cx_mat res(&w_seq[0], _dim, _nTime);
     _resVectorList = res;
 
