@@ -75,7 +75,14 @@ void ECenter::make_espin_hamiltonian()
     double omegaQ = _electron_spin.get_omegaQ() * 2.0 * datum::pi * 1e6;
     double gamma = _electron_spin.get_gamma();
 
-    _espin_hamiltonian = gamma * (_magB(0)*sx + _magB(1)*sy + _magB(2)*sz );
+    //add crystal field effect
+    vec g_factor;
+    g_factor << 0.651351756257598 << 0.262923182097458  << 0.300429448211052
+             << 0.262923182097458 << 0.679899832241717  << -0.085775108740469
+             << 0.300429448211052 << -0.085775108740469 << 0.909800724709741;
+    _espin_hamiltonian = gamma * (_magB(0)*sx*g_factor(0) + _magB(0)*sy*g_factor(1) + _magB(0)*sz*g_factor(2) \
+                                + _magB(1)*sx*g_factor(3) + _magB(1)*sy*g_factor(4) + _magB(1)*sz*g_factor(5) \
+                                + _magB(2)*sx*g_factor(6) + _magB(2)*sy*g_factor(7) + _magB(2)*sz*g_factor(8));
 
     eig_sym(_eigen_vals, _eigen_vectors, _espin_hamiltonian);
 }

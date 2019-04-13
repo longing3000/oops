@@ -296,9 +296,9 @@ SingleSpinDephasing::SingleSpinDephasing(const cSpinInteractionDomain& domain, c
     {
         cSPIN spin0=(*it)[0];
         assert (spin0.get_dimension2() == 4); // only spin-1/2 pure dephasing is implemented.
-        vector<TERM> term_list; TERM t; 
+        vector<TERM> term_list; TERM t;
         t.push_back( dephase_mat ); term_list.push_back( t );
-        
+
         _mat_list.push_back( term_list );
     }
 }
@@ -318,7 +318,7 @@ cSpinInteractionCoeff::~cSpinInteractionCoeff()
 ostream&  operator << (ostream& outs, cSpinInteractionCoeff& coef)
 {
     //int i = 0;
-    COEFF_LIST coefflist = coef.getCoeffList(); 
+    COEFF_LIST coefflist = coef.getCoeffList();
     //for(auto co : coefflist)
     //{
     //    int j = 0;
@@ -359,7 +359,17 @@ DipolarInteractionCoeff::DipolarInteractionCoeff(const cSpinInteractionDomain& d
     for(it=sag.begin(); it!=sag.end(); ++it)
     {
         cSPIN spin0=(*it)[0];    cSPIN spin1=(*it)[1];
-        vec coeffs = dipole(spin0, spin1);
+        vec coeffs_raw = dipole(spin0, spin1);
+
+        //add a g_eff tensor
+        mat coeffs_mat = reshape(coeffs_raw,3,3);
+        mat g_factor;
+        g_factor << 0.651351756257598 << 0.262923182097458  << 0.300429448211052  << endr
+                 << 0.262923182097458 << 0.679899832241717  << -0.085775108740469 << endr
+                 << 0.300429448211052 << -0.085775108740469 << 0.909800724709741  << endr;
+        mat coeffs_tot = g_factor*coeffs_mat;
+        vec coeffs = vectorise(coeffs_tot);
+
         _coeff_list.push_back(coeffs);
     }
 }
@@ -397,7 +407,7 @@ ZeemanInteractionCoeff::~ZeemanInteractionCoeff()
 //----------------------------------------------------------------------------//
 //{{{ DipolarFieldInteractionCoeff
 DipolarFieldInteractionCoeff::DipolarFieldInteractionCoeff(const cSpinInteractionDomain& domain, const cSPIN& center_spin, const PureState& state)
-{ 
+{
     _nCoeff = 6;
 
     vector< vector<cSPIN> > sag;
@@ -425,7 +435,7 @@ DipolarFieldInteractionCoeff::DipolarFieldInteractionCoeff(const cSpinInteractio
         vec dip_field = zeros<vec>(3);
         for(int i=0; i<spin_list.size(); ++i)
             dip_field += dipole_field(spin0, spin_list[i], state_list[i].getVector() );
-        
+
         vec coeffs; coeffs << dip_field[0] << dip_field[1] << dip_field[2] << 0.0 << 0.0 << 0.0;
         _coeff_list.push_back(coeffs);
     }
@@ -444,7 +454,7 @@ DipolarFieldInteractionCoeff::DipolarFieldInteractionCoeff(const cSpinInteractio
         vec dip_field = zeros<vec>(3);
         for(int i=0; i<spin_list.size(); ++i)
             dip_field += pre_factor_list[i] * dipole_field(spin0, spin_list[i], state_list[i].getVector() );
-        
+
         vec coeffs; coeffs << dip_field[0] << dip_field[1] << dip_field[2] << 0.0 << 0.0 << 0.0;
         _coeff_list.push_back(coeffs);
     }
@@ -488,10 +498,9 @@ SpinDephasingRate::SpinDephasingRate(const cSpinInteractionDomain& domain, const
     for(it=sag.begin(); it!=sag.end(); ++it)
     {
         cSPIN spin0=(*it)[0];
-        vec coeffs(1); coeffs(0) =  dephasing_rate; 
+        vec coeffs(1); coeffs(0) =  dephasing_rate;
         _coeff_list.push_back(coeffs);
     }
 }
 //}}}
 ////////////////////////////////////////////////////////////////////////////////
-
